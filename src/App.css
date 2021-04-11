@@ -1,7 +1,7 @@
-.app {
+.vh {
   height: 100vh;
 }
 
-.vh {
-  height: 100vh;
+.grow {
+  flex-grow: 1;
 }

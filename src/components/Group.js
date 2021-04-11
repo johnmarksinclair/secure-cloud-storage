@@ -2,7 +2,7 @@ import { Button, Header, Segment } from "semantic-ui-react";
 
 const Group = () => {
   return (
-    <div className="col py-4 vh">
+    <div className="h-100">
       <Segment placeholder className="h-100">
         <Header icon>You aren't in any groups yet</Header>
         <Button primary>Join Group</Button>

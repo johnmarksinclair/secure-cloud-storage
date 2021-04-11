@@ -1,5 +1,5 @@
 import Profile from "../components/Profile";
-import Group from "../components/Group";
+import Files from "../components/Files";
 import { Tab, Row, Col, Nav } from "react-bootstrap";
 
 const Dash = () => {
@@ -18,8 +18,8 @@ const Dash = () => {
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
-                <Nav.Link eventKey="group">
-                  <div className="text-center">Groups</div>
+                <Nav.Link eventKey="files">
+                  <div className="text-center">Files</div>
                 </Nav.Link>
               </Nav.Item>
             </Nav>
@@ -29,8 +29,8 @@ const Dash = () => {
               <Tab.Pane eventKey="profile">
                 <Profile />
               </Tab.Pane>
-              <Tab.Pane eventKey="group">
-                <Group />
+              <Tab.Pane eventKey="files">
+                <Files />
               </Tab.Pane>
             </Tab.Content>
           </Col>
