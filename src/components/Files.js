@@ -77,7 +77,7 @@ const Files = () => {
   };
 
   return (
-    <div className="col py-4 vh">
+    <div className="vh col py-4">
       <Segment placeholder className="h-100">
         <div className="h-100 d-flex flex-column">
           <div className="row px-3">
