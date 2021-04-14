@@ -1,4 +1,5 @@
-import { Button, Header, Segment, Icon } from "semantic-ui-react";
+import { Header, Segment, Icon } from "semantic-ui-react";
+import { Button } from "react-bootstrap";
 
 const Group = () => {
   const DisplayGroups = () => {
@@ -9,7 +10,7 @@ const Group = () => {
             <Icon name="group" />
             No Groups
           </Header>
-          Join some with the button above
+          Join one with the button above
         </div>
       </div>
     );
@@ -19,13 +20,13 @@ const Group = () => {
     <div className="vh col py-4">
       <Segment placeholder className="h-100">
         <div className="h-100 d-flex flex-column">
-          <div className="row px-3 pt-3">
+          <div className="row px-4 pt-3">
             <div className="col-6 d-flex align-items-center">
               <Header>My Groups</Header>
             </div>
             <div className="col-6 d-flex justify-content-center">
               <div className="ml-auto">
-                <Button primary>Join Group</Button>
+                <Button variant="info">Join Group</Button>
               </div>
             </div>
           </div>

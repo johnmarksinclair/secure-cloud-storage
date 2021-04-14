@@ -5,3 +5,13 @@
 .grow {
   flex-grow: 1;
 }
+
+.pill:not(.active) {
+  background-color: #17a2b8 !important;
+  color: white !important;
+}
+
+.pill.active {
+  background-color: whitesmoke !important;
+  color: black !important;
+}
