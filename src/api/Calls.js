@@ -9,7 +9,7 @@ export const addUser = async (email) => {
   ref.get().then((doc) => {
     if (doc.exists) {
       console.log("user has keys");
-      console.log(doc.data());
+      // console.log(doc.data());
     } else {
       let keys = generateKeys(email);
       let user = {

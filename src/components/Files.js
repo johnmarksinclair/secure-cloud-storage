@@ -26,16 +26,18 @@ const Files = ({ email }) => {
   const uploadFile = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const storageRef = app.storage().ref();
-      const fileRef = storageRef.child(file.name);
-      fileRef.put(file).then(() => {
-        fileRef.getDownloadURL().then((url) => {
-          let newFile = { owner: email, name: file.name, url: url };
-          addUserFile(newFile);
-          console.log("added file to storage and firestore");
-          setFlag(!flag);
+      if (file.size < 50 * 1024 * 1024) {
+        const storageRef = app.storage().ref();
+        const fileRef = storageRef.child(file.name);
+        fileRef.put(file).then(() => {
+          fileRef.getDownloadURL().then((url) => {
+            let newFile = { owner: email, name: file.name, url: url };
+            addUserFile(newFile);
+            console.log("added file to storage and firestore");
+            setFlag(!flag);
+          });
         });
-      });
+      }
     }
   };
 
