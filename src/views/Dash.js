@@ -5,9 +5,11 @@ import { UserContext } from "../providers/UserProvider";
 import { auth } from "../firebase";
 import { Tab, Row, Col, Nav, Modal, Button } from "react-bootstrap";
 import { Image, Icon } from "semantic-ui-react";
+import { addUser } from "../api/Calls";
 
 const Dash = () => {
   const user = useContext(UserContext);
+  const updateKeys = async (email) => addUser(email);
   var pic = "";
   var name = "";
   var add = "";
@@ -17,6 +19,7 @@ const Dash = () => {
     name = displayName;
     add = email;
     console.log(add);
+    updateKeys(email);
   }
   const [modalShow, setModalShow] = useState(false);
   const handleModalClose = () => setModalShow(false);
@@ -96,7 +99,7 @@ const Dash = () => {
                 <Group />
               </Tab.Pane>
               <Tab.Pane eventKey="files">
-                <Files />
+                <Files email={add} />
               </Tab.Pane>
             </Tab.Content>
           </Col>
