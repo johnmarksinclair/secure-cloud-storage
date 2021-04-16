@@ -1,7 +1,7 @@
 import { Header, Icon, Segment, Input, Button } from "semantic-ui-react";
 import { useState, useEffect } from "react";
 import { app } from "../firebase";
-import { addUserFile, getUserFiles } from "../api/Calls";
+import { addUserFile, getUserFiles, deleteFile } from "../api/Calls";
 
 const Files = ({ email }) => {
   const [files, setFiles] = useState([]);
@@ -19,21 +19,29 @@ const Files = ({ email }) => {
       userfiles.forEach((f) => {
         fileArr.push(f);
       });
-      setFiles(fileArr);
     }
+    setFiles(fileArr);
   };
 
   const uploadFile = (e) => {
+    //toggle loader on
     const file = e.target.files[0];
     if (file) {
+      //limit to 50mb
       if (file.size < 50 * 1024 * 1024) {
         const storageRef = app.storage().ref();
         const fileRef = storageRef.child(file.name);
         fileRef.put(file).then(() => {
+          //toggle loader off
           fileRef.getDownloadURL().then((url) => {
-            let newFile = { owner: email, name: file.name, url: url };
+            let newFile = {
+              owner: email,
+              name: file.name,
+              url: url,
+            };
             addUserFile(newFile);
             console.log("added file to storage and firestore");
+            e.target.value = null;
             setFlag(!flag);
           });
         });
@@ -41,16 +49,30 @@ const Files = ({ email }) => {
     }
   };
 
+  const handleDelete = async (file) => {
+    deleteFile(file);
+    setTimeout(function () {
+      setFlag(!flag);
+    }, 1000);
+  };
+
   const FileButton = ({ file }) => {
-    let name = file.filename;
+    let filename = file.filename;
     let url = file.download;
     return (
       <div className="py-1 d-flex align-items-center">
-        <div className="overflow-hidden">{name}</div>
+        <div className="overflow-hidden mr-2">{filename}</div>
         <div className="ml-auto">
           <Button onClick={() => window.open(url)}>
             <Button.Content>
               <Icon name="arrow alternate circle down outline" />
+            </Button.Content>
+          </Button>
+        </div>
+        <div className="pl-1">
+          <Button color="red" onClick={() => handleDelete(file)}>
+            <Button.Content>
+              <Icon name="delete" />
             </Button.Content>
           </Button>
         </div>

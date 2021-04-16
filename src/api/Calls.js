@@ -1,8 +1,10 @@
-import { firestore } from "../firebase";
+import { firestore, app } from "../firebase";
 
 const users = firestore.collection("users");
 const files = firestore.collection("files");
 // const groups = firestore.collection("groups");
+const storage = app.storage();
+const storageRef = storage.ref();
 
 export const addUser = async (email) => {
   let ref = await users.doc(email);
@@ -50,9 +52,25 @@ export const getUserFiles = async (email) => {
   return fileArr;
 };
 
+export const deleteFile = async (file) => {
+  let ref = storageRef.child(file.filename);
+  ref
+    .delete()
+    .then(async () => {
+      files.doc(file.id).delete();
+      console.log("file deleted");
+      return true;
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+  return false;
+};
+
 export const createUserObj = () => {};
 export const createFileObj = (doc) => {
   let fileObj = {
+    id: `${doc.id}`,
     owner: `${doc.data().owner}`,
     download: `${doc.data().url}`,
     filename: `${doc.data().name}`,
