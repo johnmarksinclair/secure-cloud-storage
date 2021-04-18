@@ -121,13 +121,13 @@ const Files = ({ email, keys }) => {
         handleDelete={handleDelete}
         file={currentFile}
       />
-      <Segment placeholder className="h-100 bg-light text-dark">
+      <Segment placeholder className="h-100">
         <div className="h-100 d-flex flex-column">
-          <div className="row px-3">
-            <div className="pt-3 col-xs-12 col-sm-3 d-flex align-items-center">
+          <div className="row px-3 pt-3">
+            <div className="col-6 d-flex align-items-center">
               <Header className="text-dark">My Files</Header>
             </div>
-            <div className="pt-3 col-xs-12 col-sm-9 d-flex justify-content-center">
+            <div className="col-6 d-flex justify-content-center">
               <div className="ml-auto">
                 <Input
                   style={{ display: "none" }}
