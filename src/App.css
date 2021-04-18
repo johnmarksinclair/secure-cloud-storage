@@ -16,6 +16,14 @@
   color: black !important;
 }
 
-.bg-darker {
-  background-color: #282c34 !important;
+.btn {
+  min-width: 80px;
+}
+
+.widebtn {
+  width: 100px;
+}
+
+.elip {
+  text-overflow: ellipsis;
 }

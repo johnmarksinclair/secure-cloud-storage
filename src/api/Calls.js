@@ -1,5 +1,5 @@
 import { firestore, app } from "../firebase";
-import { RSA } from "hybrid-crypto-js";
+import { genKeys } from "./Crypto";
 
 const users = firestore.collection("users");
 const files = firestore.collection("files");
@@ -8,33 +8,41 @@ const storage = app.storage();
 const storageRef = storage.ref();
 
 export const addUser = async (email) => {
-  let ref = users.doc(email);
-  ref.get().then(async (doc) => {
-    if (doc.exists) {
-      console.log(doc.data());
-      // let pub = doc.data().keys.public;
-      // let priv = doc.data().keys.private;
-    } else {
-      console.log("new user, generating keys for " + email);
-      var rsa = new RSA();
-      rsa.generateKeyPair((keyPair) => {
-        let pair = {
-          public: keyPair.publicKey,
-          private: keyPair.privateKey,
-        };
+  return new Promise((resolve) => {
+    let ref = users.doc(email);
+    ref.get().then(async (doc) => {
+      if (doc.exists) {
+        resolve(doc.data().keys);
+      } else {
+        console.log("new user, generating keys for " + email);
+        let pair = await genKeys();
         let user = {
           keys: pair,
           groups: [],
         };
-        // console.log(user);
         users.doc(email).set(user);
-      });
-    }
+        resolve(pair);
+      }
+    });
   });
 };
 
-export const addUserFile = async (doc) => {
-  files.add(doc);
+export const addUserFile = async (file, email) => {
+  return new Promise((resolve) => {
+    const storageRef = app.storage().ref();
+    const fileRef = storageRef.child(file.name);
+    fileRef.put(file).then(() => {
+      fileRef.getDownloadURL().then((url) => {
+        let newFile = {
+          owner: email,
+          name: file.name,
+          url: url,
+        };
+        files.add(newFile);
+        resolve();
+      });
+    });
+  });
 };
 
 export const getUserFiles = async (email) => {
@@ -56,7 +64,7 @@ export const deleteFile = async (file) => {
     .delete()
     .then(async () => {
       files.doc(file.id).delete();
-      console.log("file deleted");
+      // console.log("file deleted");
       return true;
     })
     .catch((error) => {

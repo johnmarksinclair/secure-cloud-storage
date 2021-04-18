@@ -1,12 +1,11 @@
-import { Header, Icon, Segment, Input, Button } from "semantic-ui-react";
+import { Header, Icon, Segment, Input } from "semantic-ui-react";
 import { useState, useEffect } from "react";
-import { app } from "../firebase";
 import { addUserFile, getUserFiles, deleteFile } from "../api/Calls";
 import DeleteModal from "../components/DeleteModal";
-import { Modal } from "react-bootstrap";
+import { Modal, Button } from "react-bootstrap";
 import { encryptFile } from "../api/Crypto";
 
-const Files = ({ email, theme }) => {
+const Files = ({ email, keys }) => {
   const [files, setFiles] = useState([]);
   const [flag, setFlag] = useState(false);
   const [deleteModalShow, setDeleteShow] = useState(false);
@@ -20,7 +19,7 @@ const Files = ({ email, theme }) => {
   useEffect(() => {
     updateData();
     // eslint-disable-next-line
-  }, [flag]);
+  }, [flag, keys]);
 
   const updateData = async () => {
     let userfiles = await getUserFiles(email);
@@ -57,23 +56,10 @@ const Files = ({ email, theme }) => {
     if (file) {
       if (isDuplicate(file)) setDupeShow(true);
       else if (file.size < 50 * 1024 * 1024) {
-        // 50mb
-        file = await encryptFile(file);
-        console.log(file);
-        const storageRef = app.storage().ref();
-        const fileRef = storageRef.child(file.name);
-        fileRef.put(file).then(() => {
-          fileRef.getDownloadURL().then((url) => {
-            let newFile = {
-              owner: email,
-              name: file.name,
-              url: url,
-            };
-            addUserFile(newFile);
-            setFlag(!flag);
-          });
-        });
-      }
+        file = await encryptFile(file, keys);
+        await addUserFile(file, email);
+        setFlag(!flag);
+      } else console.log("file too large");
     }
     e.target.value = null;
   };
@@ -91,19 +77,17 @@ const Files = ({ email, theme }) => {
     let url = file.download;
     return (
       <div className="py-1 d-flex align-items-center">
-        <div className="overflow-hidden mr-2">{filename}</div>
+        <div className="overflow-hidden mr-3 elip">{filename}</div>
         <div className="ml-auto">
-          <Button onClick={() => window.open(url)}>
-            <Button.Content>
-              <Icon name="arrow alternate circle down outline" />
-            </Button.Content>
+          <Button variant="outline-info" onClick={() => window.open(url)}>
+            <Icon name="arrow alternate circle down outline" />
+            Download
           </Button>
         </div>
         <div className="pl-2">
-          <Button color="red" onClick={() => handleDeleteShow(file)}>
-            <Button.Content>
-              <Icon name="delete" />
-            </Button.Content>
+          <Button variant="danger" onClick={() => handleDeleteShow(file)}>
+            <Icon name="delete" />
+            Delete
           </Button>
         </div>
       </div>
@@ -137,15 +121,29 @@ const Files = ({ email, theme }) => {
         handleDelete={handleDelete}
         file={currentFile}
       />
-      <Segment placeholder className={"h-100 " + theme.both}>
+      <Segment placeholder className="h-100 bg-light text-dark">
         <div className="h-100 d-flex flex-column">
           <div className="row px-3">
             <div className="pt-3 col-xs-12 col-sm-3 d-flex align-items-center">
-              <Header className={theme.text}>My Files</Header>
+              <Header className="text-dark">My Files</Header>
             </div>
             <div className="pt-3 col-xs-12 col-sm-9 d-flex justify-content-center">
               <div className="ml-auto">
-                <Input type="file" onChange={(e) => uploadFile(e)} />
+                <Input
+                  style={{ display: "none" }}
+                  type="file"
+                  id="hiddenFileInput"
+                  onChange={(e) => uploadFile(e)}
+                />
+                <Button
+                  className="widebtn"
+                  variant="info"
+                  onClick={() => {
+                    document.getElementById("hiddenFileInput").click();
+                  }}
+                >
+                  Upload
+                </Button>
               </div>
             </div>
           </div>

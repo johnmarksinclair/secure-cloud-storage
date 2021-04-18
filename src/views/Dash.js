@@ -1,6 +1,6 @@
 import Files from "../components/Files";
 import Group from "../components/Group";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { UserContext } from "../providers/UserProvider";
 import { Tab, Row, Col, Nav } from "react-bootstrap";
 import { Image, Icon } from "semantic-ui-react";
@@ -9,41 +9,27 @@ import LogoutModal from "../components/LogoutModal";
 
 const Dash = () => {
   const user = useContext(UserContext);
-  const updateKeys = async (email) => addUser(email);
-  var pic = "";
-  var name = "";
-  var add = "";
-  if (user) {
-    let { photoURL, displayName, email } = user;
-    pic = photoURL;
-    name = displayName;
-    add = email;
-    // console.log(add);
-    updateKeys(email);
-  }
+  const [keys, setKeys] = useState({});
+  const [pic, setPic] = useState("");
+  const [name, setName] = useState("");
+  const [add, setAdd] = useState("");
   const [logoutModalShow, setLogoutShow] = useState(false);
-  // const light = {
-  //   bg: "bg-light",
-  //   text: "text-dark",
-  //   both: "bg-light text-dark",
-  //   header: "text-light,",
-  // };
-  // const dark = {
-  //   bg: "bg-darker",
-  //   text: "text-light",
-  //   both: "bg-darker text-light",
-  //   header: "text-dark",
-  // };
-  // const [theme, setTheme] = useState(light);
-  // const handleTheme = () => {
-  //   if (theme.bg === "bg-light") setTheme(dark);
-  //   else setTheme(light);
-  // };
-  const theme = {
-    bg: "bg-light",
-    text: "text-dark",
-    both: "bg-light text-dark",
-    header: "text-light,",
+
+  useEffect(() => {
+    updateData();
+    // eslint-disable-next-line
+  }, [user]);
+
+  const updateData = async () => {
+    console.log("Dash.js: updateData");
+    if (user) {
+      let { photoURL, displayName, email } = user;
+      setPic(photoURL);
+      setName(displayName);
+      setAdd(email);
+      let pair = await addUser(email);
+      setKeys(pair);
+    }
   };
 
   return (
@@ -93,19 +79,16 @@ const Dash = () => {
                     </Nav.Link>
                   </Nav.Item>
                 </Nav>
-                {/* <Button variant="light" onClick={handleTheme}>
-                  <Icon name="sun outline" />
-                </Button> */}
               </div>
             </div>
           </Col>
-          <Col md={10} className={theme.both}>
+          <Col md={10} className="bg-light text-dark">
             <Tab.Content>
               <Tab.Pane eventKey="group">
                 <Group />
               </Tab.Pane>
               <Tab.Pane eventKey="files">
-                <Files email={add} theme={theme} />
+                <Files email={add} keys={keys} />
               </Tab.Pane>
             </Tab.Content>
           </Col>

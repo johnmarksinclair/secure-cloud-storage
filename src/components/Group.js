@@ -26,7 +26,9 @@ const Group = () => {
             </div>
             <div className="col-6 d-flex justify-content-center">
               <div className="ml-auto">
-                <Button variant="info">Join Group</Button>
+                <Button className="widebtn" variant="info">
+                  Join Group
+                </Button>
               </div>
             </div>
           </div>
