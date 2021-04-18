@@ -45,8 +45,12 @@ const Files = ({ email, keys }) => {
       <Modal show={dupeModalShow} onHide={() => setDupeShow(false)}>
         <Modal.Header>
           <Modal.Title>Duplicate file detected!</Modal.Title>
-          <Button onClick={() => setDupeShow(false)}>Close</Button>
         </Modal.Header>
+        <Modal.Footer>
+          <Button variant="info" onClick={() => setDupeShow(false)}>
+            Close
+          </Button>
+        </Modal.Footer>
       </Modal>
     );
   };
@@ -66,10 +70,8 @@ const Files = ({ email, keys }) => {
 
   const handleDelete = async (file) => {
     setDeleteShow(false);
-    deleteFile(file);
-    setTimeout(function () {
-      setFlag(!flag);
-    }, 1000);
+    await deleteFile(file);
+    setFlag(!flag);
   };
 
   const FileButton = ({ file }) => {

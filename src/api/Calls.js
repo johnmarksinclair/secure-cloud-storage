@@ -59,18 +59,19 @@ export const getUserFiles = async (email) => {
 };
 
 export const deleteFile = async (file) => {
-  let ref = storageRef.child(file.filename);
-  ref
-    .delete()
-    .then(async () => {
-      files.doc(file.id).delete();
-      // console.log("file deleted");
-      return true;
-    })
-    .catch((error) => {
-      console.log(error);
-    });
-  return false;
+  return new Promise((resolve, revoke) => {
+    let ref = storageRef.child(file.filename);
+    ref
+      .delete()
+      .then(async () => {
+        files.doc(file.id).delete();
+        resolve();
+      })
+      .catch((error) => {
+        console.log(error);
+        revoke();
+      });
+  });
 };
 
 export const createFileObj = (doc) => {
