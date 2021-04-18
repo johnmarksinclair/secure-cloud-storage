@@ -2,10 +2,10 @@ import Files from "../components/Files";
 import Group from "../components/Group";
 import { useContext, useState } from "react";
 import { UserContext } from "../providers/UserProvider";
-import { auth } from "../firebase";
-import { Tab, Row, Col, Nav, Modal, Button } from "react-bootstrap";
+import { Tab, Row, Col, Nav } from "react-bootstrap";
 import { Image, Icon } from "semantic-ui-react";
 import { addUser } from "../api/Calls";
+import LogoutModal from "../components/LogoutModal";
 
 const Dash = () => {
   const user = useContext(UserContext);
@@ -18,46 +18,46 @@ const Dash = () => {
     pic = photoURL;
     name = displayName;
     add = email;
-    console.log(add);
+    // console.log(add);
     updateKeys(email);
   }
-  const [modalShow, setModalShow] = useState(false);
-  const handleModalClose = () => setModalShow(false);
-  const handleModalShow = () => setModalShow(true);
-
-  const ConfirmModal = () => {
-    return (
-      <Modal show={modalShow} onHide={handleModalClose} size="sm" centered>
-        <Modal.Header>
-          <div className="col text-center">
-            <Modal.Title>Sign Out?</Modal.Title>
-            <div className="pt-4 row">
-              <div className="col d-flex justify-content-end">
-                <Button variant="outline-info" onClick={handleModalClose}>
-                  Cancel
-                </Button>
-              </div>
-              <div className="col d-flex justify-content-start">
-                <Button variant="info" onClick={() => auth.signOut()}>
-                  Sign Out
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Modal.Header>
-      </Modal>
-    );
+  const [logoutModalShow, setLogoutShow] = useState(false);
+  // const light = {
+  //   bg: "bg-light",
+  //   text: "text-dark",
+  //   both: "bg-light text-dark",
+  //   header: "text-light,",
+  // };
+  // const dark = {
+  //   bg: "bg-darker",
+  //   text: "text-light",
+  //   both: "bg-darker text-light",
+  //   header: "text-dark",
+  // };
+  // const [theme, setTheme] = useState(light);
+  // const handleTheme = () => {
+  //   if (theme.bg === "bg-light") setTheme(dark);
+  //   else setTheme(light);
+  // };
+  const theme = {
+    bg: "bg-light",
+    text: "text-dark",
+    both: "bg-light text-dark",
+    header: "text-light,",
   };
 
   return (
     <Tab.Container id="left-tabs-example" defaultActiveKey="files">
-      <ConfirmModal />
+      <LogoutModal
+        logoutModalShow={logoutModalShow}
+        setLogoutShow={setLogoutShow}
+      />
       <Col className="h-100">
         <Row className="h-100">
           <Col md={2} className="bg-info text-light d-flex flex-column">
             <div className="flex-none">
               <div className="pt-4 pb-2 text-center">
-                <h2 className="">
+                <h2>
                   <Icon name="cloud" className="mr-3" />
                   Secure Store
                 </h2>
@@ -85,21 +85,27 @@ const Dash = () => {
                     </Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
-                    <Nav.Link onClick={handleModalShow} className="pill">
+                    <Nav.Link
+                      onClick={() => setLogoutShow(true)}
+                      className="pill"
+                    >
                       <div className="text-center">Sign Out</div>
                     </Nav.Link>
                   </Nav.Item>
                 </Nav>
+                {/* <Button variant="light" onClick={handleTheme}>
+                  <Icon name="sun outline" />
+                </Button> */}
               </div>
             </div>
           </Col>
-          <Col md={10} className="bg-light">
+          <Col md={10} className={theme.both}>
             <Tab.Content>
               <Tab.Pane eventKey="group">
                 <Group />
               </Tab.Pane>
               <Tab.Pane eventKey="files">
-                <Files email={add} />
+                <Files email={add} theme={theme} />
               </Tab.Pane>
             </Tab.Content>
           </Col>

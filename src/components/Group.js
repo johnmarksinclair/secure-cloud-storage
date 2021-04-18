@@ -20,7 +20,7 @@ const Group = () => {
     <div className="vh col py-4">
       <Segment placeholder className="h-100">
         <div className="h-100 d-flex flex-column">
-          <div className="row px-4 pt-3">
+          <div className="row px-3 pt-3">
             <div className="col-6 d-flex align-items-center">
               <Header>My Groups</Header>
             </div>

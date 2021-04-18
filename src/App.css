@@ -15,3 +15,7 @@
   background-color: whitesmoke !important;
   color: black !important;
 }
+
+.bg-darker {
+  background-color: #282c34 !important;
+}

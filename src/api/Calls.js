@@ -1,4 +1,5 @@
 import { firestore, app } from "../firebase";
+import { RSA } from "hybrid-crypto-js";
 
 const users = firestore.collection("users");
 const files = firestore.collection("files");
@@ -7,29 +8,29 @@ const storage = app.storage();
 const storageRef = storage.ref();
 
 export const addUser = async (email) => {
-  let ref = await users.doc(email);
-  ref.get().then((doc) => {
+  let ref = users.doc(email);
+  ref.get().then(async (doc) => {
     if (doc.exists) {
-      console.log("user has keys");
-      // console.log(doc.data());
+      console.log(doc.data());
+      // let pub = doc.data().keys.public;
+      // let priv = doc.data().keys.private;
     } else {
-      let keys = generateKeys(email);
-      let user = {
-        keys: keys,
-        groups: [],
-      };
-      users.doc(email).set(user);
+      console.log("new user, generating keys for " + email);
+      var rsa = new RSA();
+      rsa.generateKeyPair((keyPair) => {
+        let pair = {
+          public: keyPair.publicKey,
+          private: keyPair.privateKey,
+        };
+        let user = {
+          keys: pair,
+          groups: [],
+        };
+        // console.log(user);
+        users.doc(email).set(user);
+      });
     }
   });
-};
-
-const generateKeys = (email) => {
-  //todo gen keys
-  console.log("generating keys for " + email);
-  return {
-    public: 1234,
-    private: 4321,
-  };
 };
 
 export const addUserFile = async (doc) => {
@@ -40,13 +41,10 @@ export const getUserFiles = async (email) => {
   let snapshot = await files.where("owner", "==", email).get();
   let fileArr = [];
   if (snapshot.empty) {
-    console.log("no files");
     return;
   }
   snapshot.forEach((doc) => {
-    // console.log(doc.data());
     let fileObj = createFileObj(doc);
-    // console.log(fileObj);
     fileArr.push(fileObj);
   });
   return fileArr;
@@ -67,7 +65,6 @@ export const deleteFile = async (file) => {
   return false;
 };
 
-export const createUserObj = () => {};
 export const createFileObj = (doc) => {
   let fileObj = {
     id: `${doc.id}`,

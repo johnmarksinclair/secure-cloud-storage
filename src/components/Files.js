@@ -2,10 +2,20 @@ import { Header, Icon, Segment, Input, Button } from "semantic-ui-react";
 import { useState, useEffect } from "react";
 import { app } from "../firebase";
 import { addUserFile, getUserFiles, deleteFile } from "../api/Calls";
+import DeleteModal from "../components/DeleteModal";
+import { Modal } from "react-bootstrap";
+import { encryptFile } from "../api/Crypto";
 
-const Files = ({ email }) => {
+const Files = ({ email, theme }) => {
   const [files, setFiles] = useState([]);
   const [flag, setFlag] = useState(false);
+  const [deleteModalShow, setDeleteShow] = useState(false);
+  const [currentFile, setCurrentFile] = useState(null);
+  const handleDeleteShow = (file) => {
+    setCurrentFile(file);
+    setDeleteShow(true);
+  };
+  const [dupeModalShow, setDupeShow] = useState(false);
 
   useEffect(() => {
     updateData();
@@ -23,16 +33,36 @@ const Files = ({ email }) => {
     setFiles(fileArr);
   };
 
-  const uploadFile = (e) => {
-    //toggle loader on
-    const file = e.target.files[0];
+  const isDuplicate = (passed) => {
+    let flag = false;
+    files.forEach((f) => {
+      if (f.filename === passed.name) flag = true;
+    });
+    return flag;
+  };
+
+  const DupeModal = () => {
+    return (
+      <Modal show={dupeModalShow} onHide={() => setDupeShow(false)}>
+        <Modal.Header>
+          <Modal.Title>Duplicate file detected!</Modal.Title>
+          <Button onClick={() => setDupeShow(false)}>Close</Button>
+        </Modal.Header>
+      </Modal>
+    );
+  };
+
+  const uploadFile = async (e) => {
+    let file = e.target.files[0];
     if (file) {
-      //limit to 50mb
-      if (file.size < 50 * 1024 * 1024) {
+      if (isDuplicate(file)) setDupeShow(true);
+      else if (file.size < 50 * 1024 * 1024) {
+        // 50mb
+        file = await encryptFile(file);
+        console.log(file);
         const storageRef = app.storage().ref();
         const fileRef = storageRef.child(file.name);
         fileRef.put(file).then(() => {
-          //toggle loader off
           fileRef.getDownloadURL().then((url) => {
             let newFile = {
               owner: email,
@@ -40,16 +70,16 @@ const Files = ({ email }) => {
               url: url,
             };
             addUserFile(newFile);
-            console.log("added file to storage and firestore");
-            e.target.value = null;
             setFlag(!flag);
           });
         });
       }
     }
+    e.target.value = null;
   };
 
   const handleDelete = async (file) => {
+    setDeleteShow(false);
     deleteFile(file);
     setTimeout(function () {
       setFlag(!flag);
@@ -69,8 +99,8 @@ const Files = ({ email }) => {
             </Button.Content>
           </Button>
         </div>
-        <div className="pl-1">
-          <Button color="red" onClick={() => handleDelete(file)}>
+        <div className="pl-2">
+          <Button color="red" onClick={() => handleDeleteShow(file)}>
             <Button.Content>
               <Icon name="delete" />
             </Button.Content>
@@ -100,11 +130,18 @@ const Files = ({ email }) => {
 
   return (
     <div className="vh col py-4">
-      <Segment placeholder className="h-100">
+      <DupeModal />
+      <DeleteModal
+        deleteModalShow={deleteModalShow}
+        setDeleteShow={setDeleteShow}
+        handleDelete={handleDelete}
+        file={currentFile}
+      />
+      <Segment placeholder className={"h-100 " + theme.both}>
         <div className="h-100 d-flex flex-column">
-          <div className="row px-4">
+          <div className="row px-3">
             <div className="pt-3 col-xs-12 col-sm-3 d-flex align-items-center">
-              <Header>My Files</Header>
+              <Header className={theme.text}>My Files</Header>
             </div>
             <div className="pt-3 col-xs-12 col-sm-9 d-flex justify-content-center">
               <div className="ml-auto">
