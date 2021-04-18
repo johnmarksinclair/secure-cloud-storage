@@ -19,11 +19,11 @@ export const encryptFile = async (file, keys) => {
     console.log(keys);
     var crypt = new Crypt();
     let message = "hello";
-    console.log(message);
     let enc = crypt.encrypt(keys.public, message);
+    let dec = crypt.decrypt(keys.private, enc);
+    console.log(message);
     let json = JSON.parse(enc);
     console.log(json.cipher);
-    let dec = crypt.decrypt(keys.private, enc);
     console.log(dec.message);
     resolve(file);
   });

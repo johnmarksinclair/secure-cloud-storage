@@ -8,13 +8,14 @@ import { encryptFile } from "../api/Crypto";
 const Files = ({ email, keys }) => {
   const [files, setFiles] = useState([]);
   const [flag, setFlag] = useState(false);
+  const [dupeModalShow, setDupeShow] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [deleteModalShow, setDeleteShow] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
   const handleDeleteShow = (file) => {
     setCurrentFile(file);
     setDeleteShow(true);
   };
-  const [dupeModalShow, setDupeShow] = useState(false);
 
   useEffect(() => {
     updateData();
@@ -56,6 +57,7 @@ const Files = ({ email, keys }) => {
   };
 
   const uploadFile = async (e) => {
+    setLoading(true);
     let file = e.target.files[0];
     if (file) {
       if (isDuplicate(file)) setDupeShow(true);
@@ -66,6 +68,7 @@ const Files = ({ email, keys }) => {
       } else console.log("file too large");
     }
     e.target.value = null;
+    setLoading(false);
   };
 
   const handleDelete = async (file) => {
@@ -144,7 +147,7 @@ const Files = ({ email, keys }) => {
                     document.getElementById("hiddenFileInput").click();
                   }}
                 >
-                  Upload
+                  {loading ? "Uploading..." : "Upload"}
                 </Button>
               </div>
             </div>
