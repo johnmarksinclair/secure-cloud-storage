@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { addUserFile, getUserFiles, deleteFile } from "../api/Calls";
 import DeleteModal from "../components/DeleteModal";
 import { Modal, Button } from "react-bootstrap";
-import { encryptFile } from "../api/Crypto";
+import { decryptFile } from "../api/Crypto";
 import ReactFileReader from "react-file-reader";
 
 const Files = ({ email, keys }) => {
@@ -58,36 +58,31 @@ const Files = ({ email, keys }) => {
   };
 
   const uploadFile = async (file) => {
-    setLoading(true);
     if (file) {
-      let b64 = file.base64;
-      let name = file.fileList[0].name;
-      console.log(b64);
-      console.log(name);
-      // console.log(file.length);
-      if (isDuplicate(name)) setDupeShow(true);
-      else if (b64.length / 1000 < 50 * 1024 * 1024) {
-        file = await encryptFile(b64, keys);
-        await addUserFile(b64, name, email);
-        setFlag(!flag);
-      } else console.log("file too large");
+      file = file.fileList[0];
+      if (isDuplicate(file.name)) {
+        setDupeShow(true);
+        setLoading(false);
+      } else if (file.size / 1000 < 50 * 1024 * 1024) {
+        addUserFile(file, email, keys.public).then(() => {
+          setFlag(!flag);
+          setLoading(false);
+        });
+      } else {
+        console.log("file too large");
+        setLoading(false);
+      }
     }
-    setLoading(false);
   };
 
   const downloadFile = async (file) => {
-    let name = file.filename;
-    let url = file.download;
-    console.log(name);
-    console.log(url);
-    fetch(url).then((res) => console.log(res.json()));
-    // await dataURLtoFile();
+    let decrypted = await decryptFile(file.download, keys.private);
+    window.open(decrypted.message);
   };
 
   const handleDelete = async (file) => {
     setDeleteShow(false);
-    await deleteFile(file);
-    setFlag(!flag);
+    deleteFile(file).then(() => setFlag(!flag));
   };
 
   const FileButton = ({ file }) => {
@@ -95,10 +90,6 @@ const Files = ({ email, keys }) => {
       <div className="py-1 d-flex align-items-center">
         <div className="overflow-hidden mr-3 elip">{file.filename}</div>
         <div className="ml-auto">
-          {/* <Button variant="outline-info" onClick={() => window.open(url)}>
-            <Icon name="arrow alternate circle down outline" />
-            Download
-          </Button> */}
           <Button variant="outline-info" onClick={() => downloadFile(file)}>
             <Icon name="arrow alternate circle down outline" />
             Download
@@ -155,7 +146,11 @@ const Files = ({ email, keys }) => {
                   fileTypes={"."}
                   base64={true}
                 >
-                  <Button className="widebtn" variant="info">
+                  <Button
+                    className="widebtn"
+                    variant="info"
+                    onClick={() => setLoading(true)}
+                  >
                     {loading ? "Uploading..." : "Upload"}
                   </Button>
                 </ReactFileReader>
@@ -172,31 +167,3 @@ const Files = ({ email, keys }) => {
 };
 
 export default Files;
-
-// const uploadFile = async (e) => {
-//   setLoading(true);
-//   let file = e.target.files[0];
-//   if (file) {
-//     if (isDuplicate(file)) setDupeShow(true);
-//     else if (file.size < 50 * 1024 * 1024) {
-//       file = await encryptFile(file, keys);
-//       await addUserFile(file, email);
-//       setFlag(!flag);
-//     } else console.log("file too large");
-//   }
-//   e.target.value = null;
-//   setLoading(false);
-// };
-
-/* <Input
-    style={{ display: "none" }}
-    type="file"
-    id="hiddenFileInput"
-    onChange={(e) => uploadFile(e)}
-  />
-  <Button
-    className="widebtn"
-    variant="info"
-    onClick={() => {
-      document.getElementById("hiddenFileInput").click();
-    }} */
