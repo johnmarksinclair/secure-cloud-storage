@@ -27,15 +27,15 @@ export const addUser = async (email) => {
   });
 };
 
-export const addUserFile = async (file, email) => {
+export const addUserFile = async (file, name, email) => {
   return new Promise((resolve) => {
     const storageRef = app.storage().ref();
-    const fileRef = storageRef.child(file.name);
+    const fileRef = storageRef.child(name);
     fileRef.put(file).then(() => {
       fileRef.getDownloadURL().then((url) => {
         let newFile = {
           owner: email,
-          name: file.name,
+          name: name,
           url: url,
         };
         files.add(newFile);
@@ -72,6 +72,18 @@ export const deleteFile = async (file) => {
         revoke();
       });
   });
+};
+
+export const dataURLtoFile = (dataurl, filename) => {
+  var arr = dataurl.split(","),
+    mime = arr[0].match(/:(.*?);/)[1],
+    bstr = atob(arr[1]),
+    n = bstr.length,
+    u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new File([u8arr], filename, { type: mime });
 };
 
 export const createFileObj = (doc) => {

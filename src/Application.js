@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 import { useContext } from "react";
 import { UserContext } from "./providers/UserProvider";
 import Dash from "./views/Dash";
@@ -10,13 +10,11 @@ function App() {
   return (
     <div className="vh">
       <Router>
-        <Switch>
-          {user ? (
-            <Route path="/" exact component={Dash} />
-          ) : (
-            <Route path="/" exact component={Login} />
-          )}
-        </Switch>
+        {user ? (
+          <Route path="/" exact component={Dash} />
+        ) : (
+          <Route path="/" exact component={Login} />
+        )}
       </Router>
     </div>
   );

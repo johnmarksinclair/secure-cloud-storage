@@ -2,7 +2,7 @@ import Files from "../components/Files";
 import Group from "../components/Group";
 import { useContext, useState, useEffect } from "react";
 import { UserContext } from "../providers/UserProvider";
-import { Tab, Row, Col, Nav } from "react-bootstrap";
+import { Row, Col, Button } from "react-bootstrap";
 import { Image, Icon } from "semantic-ui-react";
 import { addUser } from "../api/Calls";
 import LogoutModal from "../components/LogoutModal";
@@ -14,6 +14,10 @@ const Dash = () => {
   const [name, setName] = useState("");
   const [add, setAdd] = useState("");
   const [logoutModalShow, setLogoutShow] = useState(false);
+  const [view, setView] = useState("files");
+  const toggleView = (e) => {
+    setView(e.target.id);
+  };
 
   useEffect(() => {
     updateData();
@@ -21,7 +25,7 @@ const Dash = () => {
   }, [user]);
 
   const updateData = async () => {
-    console.log("Dash.js: updateData");
+    // console.log("Dash.js: updateData");
     if (user) {
       let { photoURL, displayName, email } = user;
       setPic(photoURL);
@@ -33,68 +37,64 @@ const Dash = () => {
   };
 
   return (
-    <Tab.Container id="left-tabs-example" defaultActiveKey="files">
+    <Col className="h-100">
       <LogoutModal
         logoutModalShow={logoutModalShow}
         setLogoutShow={setLogoutShow}
       />
-      <Col className="h-100">
-        <Row className="h-100">
-          <Col md={2} className="bg-info text-light d-flex flex-column">
-            <div className="flex-none">
-              <div className="pt-4 pb-2 text-center">
-                <h2>
-                  <Icon name="cloud" className="mr-3" />
-                  Secure Store
-                </h2>
-              </div>
+      <Row className="h-100">
+        <Col md={2} className="bg-info text-light d-flex flex-column">
+          <div className="flex-none">
+            <div className="pt-4 pb-2 text-center">
+              <h2>
+                <Icon name="cloud" className="mr-3" />
+                Secure Store
+              </h2>
             </div>
-            <div className="grow py-4 d-flex flex-column justify-content-start align-items-center">
-              <div className="col">
-                <div className="pb-4 w-100 d-flex flex-row justify-content-center align-items-center space-around">
-                  <Image src={pic} avatar />
-                  <span className="ml-2">{name}</span>
-                </div>
-                <Nav
-                  variant="pills"
-                  defaultActiveKey="files"
-                  className="flex-column"
+          </div>
+          <div className="grow py-4 d-flex flex-column justify-content-start align-items-center">
+            <div className="col d-flex flex-column align-items-center">
+              <div className="pb-4 w-100 d-flex flex-row justify-content-center align-items-center space-around">
+                <Image src={pic} avatar />
+                <span className="ml-2">{name}</span>
+              </div>
+              <div className="pb-2 w-100">
+                <Button
+                  variant="light"
+                  id="files"
+                  onClick={toggleView}
+                  className="w-100 text-info"
                 >
-                  <Nav.Item>
-                    <Nav.Link eventKey="files" className="pill">
-                      <div className="text-center">Files</div>
-                    </Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link eventKey="group" className="pill">
-                      <div className="text-center">Groups</div>
-                    </Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link
-                      onClick={() => setLogoutShow(true)}
-                      className="pill"
-                    >
-                      <div className="text-center">Sign Out</div>
-                    </Nav.Link>
-                  </Nav.Item>
-                </Nav>
+                  Files
+                </Button>
+              </div>
+              <div className="pb-2 w-100">
+                <Button
+                  variant="light"
+                  id="groups"
+                  onClick={toggleView}
+                  className="w-100 text-info"
+                >
+                  Groups
+                </Button>
+              </div>
+              <div className="pb-2 w-100">
+                <Button
+                  variant="light"
+                  className="w-100 text-info"
+                  onClick={() => setLogoutShow(true)}
+                >
+                  Sign Out
+                </Button>
               </div>
             </div>
-          </Col>
-          <Col md={10} className="bg-light text-dark">
-            <Tab.Content>
-              <Tab.Pane eventKey="group">
-                <Group />
-              </Tab.Pane>
-              <Tab.Pane eventKey="files">
-                <Files email={add} keys={keys} />
-              </Tab.Pane>
-            </Tab.Content>
-          </Col>
-        </Row>
-      </Col>
-    </Tab.Container>
+          </div>
+        </Col>
+        <Col md={10} className="bg-light text-dark">
+          {view === "files" ? <Files email={add} keys={keys} /> : <Group />}
+        </Col>
+      </Row>
+    </Col>
   );
 };
 
