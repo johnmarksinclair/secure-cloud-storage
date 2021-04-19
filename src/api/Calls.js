@@ -1,5 +1,5 @@
 import { firestore, app } from "../firebase";
-import { genKeys } from "./Crypto";
+import { genKeys, encryptFile } from "./Crypto";
 
 const users = firestore.collection("users");
 const files = firestore.collection("files");
@@ -27,16 +27,17 @@ export const addUser = async (email) => {
   });
 };
 
-export const addUserFile = async (file, name, email) => {
+export const addUserFile = async (file, email, key) => {
   return new Promise((resolve) => {
     const storageRef = app.storage().ref();
-    const fileRef = storageRef.child(name);
+    const fileRef = storageRef.child(file.name);
     fileRef.put(file).then(() => {
-      fileRef.getDownloadURL().then((url) => {
+      fileRef.getDownloadURL().then(async (url) => {
+        let encrypted = await encryptFile(url, key);
         let newFile = {
           owner: email,
-          name: name,
-          url: url,
+          name: file.name,
+          url: encrypted,
         };
         files.add(newFile);
         resolve();
