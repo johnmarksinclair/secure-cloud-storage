@@ -62,16 +62,12 @@ export const getUserFiles = async (email) => {
 export const deleteFile = async (file) => {
   return new Promise((resolve, revoke) => {
     let ref = storageRef.child(file.filename);
-    ref
-      .delete()
-      .then(async () => {
-        files.doc(file.id).delete();
-        resolve();
-      })
-      .catch((error) => {
-        console.log(error);
-        revoke();
-      });
+    ref.delete().then(async () => {
+      files
+        .doc(file.id)
+        .delete()
+        .then(() => resolve());
+    });
   });
 };
 
