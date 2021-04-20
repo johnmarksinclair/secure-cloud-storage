@@ -1,10 +1,15 @@
 import { Header, Icon, Segment } from "semantic-ui-react";
 import { useState, useEffect } from "react";
-import { addUserFile, getUserFiles, deleteFile } from "../api/Calls";
+import {
+  addUserFile,
+  getUserFiles,
+  deleteFile,
+  fileToBase64,
+  base64ToDecryptedFile,
+} from "../api/Calls";
 import DeleteModal from "../components/DeleteModal";
-import { Modal, Button } from "react-bootstrap";
-import { decryptFile } from "../api/Crypto";
-import ReactFileReader from "react-file-reader";
+import DupeModal from "../components/DupeModal";
+import { Button } from "react-bootstrap";
 
 const Files = ({ email, keys }) => {
   const [files, setFiles] = useState([]);
@@ -37,29 +42,16 @@ const Files = ({ email, keys }) => {
   const isDuplicate = (passed) => {
     let flag = false;
     files.forEach((f) => {
-      if (f.filename === passed.name) flag = true;
+      if (f.filename === passed) flag = true;
     });
     return flag;
   };
 
-  const DupeModal = () => {
-    return (
-      <Modal show={dupeModalShow} onHide={() => setDupeShow(false)}>
-        <Modal.Header>
-          <Modal.Title>Duplicate file detected!</Modal.Title>
-        </Modal.Header>
-        <Modal.Footer>
-          <Button variant="info" onClick={() => setDupeShow(false)}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    );
-  };
-
-  const uploadFile = async (file) => {
-    if (file) {
-      file = file.fileList[0];
+  const handleUpload = async (e) => {
+    setLoading(true);
+    let file = e.target.files;
+    if (file.length > 0) {
+      file = e.target.files[0];
       if (isDuplicate(file.name)) {
         setDupeShow(true);
         setLoading(false);
@@ -73,11 +65,43 @@ const Files = ({ email, keys }) => {
         setLoading(false);
       }
     }
+    e.target.value = null;
+    setLoading(false);
+
+    // console.log(encmessage);
+    // let dec = await decryptFile(enc, keys.private);
+    // dec = dec.message;
+    // let obj = await dataURLtoFile(dec, filename);
+    // let objurl = URL.createObjectURL(obj);
+    // window.open(objurl);
+    // setLoading(false);
+  };
+
+  const handleDecrypt = async (e) => {
+    let file = e.target.files[0];
+    e.target.value = null;
+    console.log(file);
+    let filename = file.name;
+    console.log(filename);
+    let b64 = await fileToBase64(file);
+    // console.log(b64);
+    let decrypted = await base64ToDecryptedFile(b64, filename, keys.private);
+    console.log(decrypted);
+    let objurl = URL.createObjectURL(decrypted);
+    window.open(objurl);
+
+    // let b64 = await fileToBase64(file);
+    // console.log(b64);
+    // let dec = await decryptFile(b64, keys.private);
+    // dec = dec.message;
+    // let obj = await dataURLtoFile(dec, file.name);
+    // console.log(obj);
+    // let objurl = URL.createObjectURL(obj);
+    // window.open(objurl);
   };
 
   const downloadFile = async (file) => {
-    let decrypted = await decryptFile(file.download, keys.private);
-    window.open(decrypted.message);
+    window.open(file.url);
   };
 
   const handleDelete = async (file) => {
@@ -125,7 +149,7 @@ const Files = ({ email, keys }) => {
 
   return (
     <div className="vh col py-4">
-      <DupeModal />
+      <DupeModal dupeModalShow={dupeModalShow} setDupeShow={setDupeShow} />
       <DeleteModal
         deleteModalShow={deleteModalShow}
         setDeleteShow={setDeleteShow}
@@ -140,20 +164,36 @@ const Files = ({ email, keys }) => {
             </div>
             <div className="col-6 d-flex justify-content-center">
               <div className="ml-auto">
-                <ReactFileReader
-                  handleFiles={uploadFile}
-                  multipleFiles={false}
-                  fileTypes={"."}
-                  base64={true}
+                <input
+                  type="file"
+                  id="upload"
+                  className="d-none"
+                  onChange={handleUpload}
+                />
+                <Button
+                  className="widebtn"
+                  variant="info"
+                  onClick={() => {
+                    document.getElementById("upload").click();
+                  }}
                 >
+                  {loading ? "Uploading..." : "Upload"}
+                </Button>
+                <div className="pt-2">
+                  <input
+                    type="file"
+                    id="decinp"
+                    className="d-none"
+                    onChange={handleDecrypt}
+                  />
                   <Button
                     className="widebtn"
                     variant="info"
-                    onClick={() => setLoading(true)}
+                    onClick={() => document.getElementById("decinp").click()}
                   >
-                    {loading ? "Uploading..." : "Upload"}
+                    Decrypt
                   </Button>
-                </ReactFileReader>
+                </div>
               </div>
             </div>
           </div>
