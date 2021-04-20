@@ -28,21 +28,57 @@ export const addUser = async (email) => {
 };
 
 export const addUserFile = async (file, email, key) => {
-  return new Promise((resolve) => {
+  return new Promise(async (resolve) => {
+    let filename = file.name;
     const storageRef = app.storage().ref();
-    const fileRef = storageRef.child(file.name);
-    fileRef.put(file).then(() => {
+    const fileRef = storageRef.child(filename);
+    let dataurlfile = await fileToDataUrl(file);
+    let encdataurl = await encryptFile(dataurlfile, key);
+    let encfilejson = JSON.parse(encdataurl);
+    let str = JSON.stringify(encfilejson);
+    // console.log(str);
+    fileRef.putString(str).then(() => {
       fileRef.getDownloadURL().then(async (url) => {
-        let encrypted = await encryptFile(url, key);
         let newFile = {
           owner: email,
-          name: file.name,
-          url: encrypted,
+          name: filename,
+          url: url,
         };
         files.add(newFile);
         resolve();
       });
     });
+  });
+};
+
+export const dataUrlToFile = (dataurl, filename) => {
+  return new Promise((resolve) => {
+    var arr = dataurl.split(","),
+      mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]),
+      n = bstr.length,
+      u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    resolve(new File([u8arr], filename, { type: mime }));
+  });
+};
+
+export const fileToDataUrl = (file) => {
+  return new Promise((resolve) => {
+    var reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      resolve(reader.result);
+    };
+  });
+};
+
+export const extractDataFromFile = (file) => {
+  return new Promise((resolve) => {
+    let extracted = file.split("base64,")[1];
+    resolve(extracted);
   });
 };
 
@@ -60,34 +96,30 @@ export const getUserFiles = async (email) => {
 };
 
 export const deleteFile = async (file) => {
-  return new Promise((resolve, revoke) => {
+  return new Promise((resolve) => {
     let ref = storageRef.child(file.filename);
-    ref.delete().then(async () => {
-      files
-        .doc(file.id)
-        .delete()
-        .then(() => resolve());
-    });
+    ref
+      .delete()
+      .then(async () => {
+        files
+          .doc(file.id)
+          .delete()
+          .then(() => resolve());
+      })
+      .catch(() => {
+        files
+          .doc(file.id)
+          .delete()
+          .then(() => resolve());
+      });
   });
-};
-
-export const dataURLtoFile = (dataurl, filename) => {
-  var arr = dataurl.split(","),
-    mime = arr[0].match(/:(.*?);/)[1],
-    bstr = atob(arr[1]),
-    n = bstr.length,
-    u8arr = new Uint8Array(n);
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new File([u8arr], filename, { type: mime });
 };
 
 export const createFileObj = (doc) => {
   let fileObj = {
     id: `${doc.id}`,
     owner: `${doc.data().owner}`,
-    download: `${doc.data().url}`,
+    url: `${doc.data().url}`,
     filename: `${doc.data().name}`,
   };
   return fileObj;

@@ -1,10 +1,15 @@
 import { Header, Icon, Segment } from "semantic-ui-react";
 import { useState, useEffect } from "react";
-import { addUserFile, getUserFiles, deleteFile } from "../api/Calls";
+import {
+  addUserFile,
+  getUserFiles,
+  deleteFile,
+  dataUrlToFile,
+} from "../api/Calls";
 import DeleteModal from "../components/DeleteModal";
-import { Modal, Button } from "react-bootstrap";
+import DupeModal from "../components/DupeModal";
+import { Button } from "react-bootstrap";
 import { decryptFile } from "../api/Crypto";
-import ReactFileReader from "react-file-reader";
 
 const Files = ({ email, keys }) => {
   const [files, setFiles] = useState([]);
@@ -37,29 +42,16 @@ const Files = ({ email, keys }) => {
   const isDuplicate = (passed) => {
     let flag = false;
     files.forEach((f) => {
-      if (f.filename === passed.name) flag = true;
+      if (f.filename === passed) flag = true;
     });
     return flag;
   };
 
-  const DupeModal = () => {
-    return (
-      <Modal show={dupeModalShow} onHide={() => setDupeShow(false)}>
-        <Modal.Header>
-          <Modal.Title>Duplicate file detected!</Modal.Title>
-        </Modal.Header>
-        <Modal.Footer>
-          <Button variant="info" onClick={() => setDupeShow(false)}>
-            Close
-          </Button>
-        </Modal.Footer>
-      </Modal>
-    );
-  };
-
-  const uploadFile = async (file) => {
-    if (file) {
-      file = file.fileList[0];
+  const handleUpload = (e) => {
+    setLoading(true);
+    let file = e.target.files;
+    if (file.length > 0) {
+      file = e.target.files[0];
       if (isDuplicate(file.name)) {
         setDupeShow(true);
         setLoading(false);
@@ -73,11 +65,25 @@ const Files = ({ email, keys }) => {
         setLoading(false);
       }
     }
+    e.target.value = null;
+    setLoading(false);
   };
 
   const downloadFile = async (file) => {
-    let decrypted = await decryptFile(file.download, keys.private);
-    window.open(decrypted.message);
+    var reader = new FileReader();
+    let data = await fetch(file.url);
+    let blob = await data.blob();
+    // console.log(blob);
+    reader.readAsText(blob);
+    reader.onload = async () => {
+      let encdataurl = reader.result;
+      // console.log(encdataurl);
+      let decdataurl = await decryptFile(encdataurl, keys.private);
+      decdataurl = decdataurl.message;
+      let decfile = await dataUrlToFile(decdataurl);
+      let objurl = URL.createObjectURL(decfile);
+      window.open(objurl);
+    };
   };
 
   const handleDelete = async (file) => {
@@ -125,7 +131,7 @@ const Files = ({ email, keys }) => {
 
   return (
     <div className="vh col py-4">
-      <DupeModal />
+      <DupeModal dupeModalShow={dupeModalShow} setDupeShow={setDupeShow} />
       <DeleteModal
         deleteModalShow={deleteModalShow}
         setDeleteShow={setDeleteShow}
@@ -140,20 +146,21 @@ const Files = ({ email, keys }) => {
             </div>
             <div className="col-6 d-flex justify-content-center">
               <div className="ml-auto">
-                <ReactFileReader
-                  handleFiles={uploadFile}
-                  multipleFiles={false}
-                  fileTypes={"."}
-                  base64={true}
+                <input
+                  type="file"
+                  id="upload"
+                  className="d-none"
+                  onChange={handleUpload}
+                />
+                <Button
+                  className="widebtn"
+                  variant="info"
+                  onClick={() => {
+                    document.getElementById("upload").click();
+                  }}
                 >
-                  <Button
-                    className="widebtn"
-                    variant="info"
-                    onClick={() => setLoading(true)}
-                  >
-                    {loading ? "Uploading..." : "Upload"}
-                  </Button>
-                </ReactFileReader>
+                  {loading ? "Uploading..." : "Upload"}
+                </Button>
               </div>
             </div>
           </div>
