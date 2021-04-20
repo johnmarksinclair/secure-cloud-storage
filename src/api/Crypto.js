@@ -13,18 +13,18 @@ export const genKeys = () => {
   });
 };
 
-export const encryptFile = async (file, key) => {
+export const encryptFile = async (data, key) => {
   return new Promise((resolve) => {
     var crypt = new Crypt();
-    let enc = crypt.encrypt(key, file);
+    let enc = crypt.encrypt(key, data);
     resolve(enc);
   });
 };
 
-export const decryptFile = async (file, key) => {
+export const decryptFile = async (data, key) => {
   return new Promise((resolve) => {
     var crypt = new Crypt();
-    let dec = crypt.decrypt(key, file);
+    let dec = crypt.decrypt(key, data);
     resolve(dec);
   });
 };

@@ -4,12 +4,12 @@ import {
   addUserFile,
   getUserFiles,
   deleteFile,
-  fileToBase64,
-  base64ToDecryptedFile,
+  dataUrlToFile,
 } from "../api/Calls";
 import DeleteModal from "../components/DeleteModal";
 import DupeModal from "../components/DupeModal";
 import { Button } from "react-bootstrap";
+import { decryptFile } from "../api/Crypto";
 
 const Files = ({ email, keys }) => {
   const [files, setFiles] = useState([]);
@@ -47,7 +47,7 @@ const Files = ({ email, keys }) => {
     return flag;
   };
 
-  const handleUpload = async (e) => {
+  const handleUpload = (e) => {
     setLoading(true);
     let file = e.target.files;
     if (file.length > 0) {
@@ -67,41 +67,23 @@ const Files = ({ email, keys }) => {
     }
     e.target.value = null;
     setLoading(false);
-
-    // console.log(encmessage);
-    // let dec = await decryptFile(enc, keys.private);
-    // dec = dec.message;
-    // let obj = await dataURLtoFile(dec, filename);
-    // let objurl = URL.createObjectURL(obj);
-    // window.open(objurl);
-    // setLoading(false);
-  };
-
-  const handleDecrypt = async (e) => {
-    let file = e.target.files[0];
-    e.target.value = null;
-    console.log(file);
-    let filename = file.name;
-    console.log(filename);
-    let b64 = await fileToBase64(file);
-    // console.log(b64);
-    let decrypted = await base64ToDecryptedFile(b64, filename, keys.private);
-    console.log(decrypted);
-    let objurl = URL.createObjectURL(decrypted);
-    window.open(objurl);
-
-    // let b64 = await fileToBase64(file);
-    // console.log(b64);
-    // let dec = await decryptFile(b64, keys.private);
-    // dec = dec.message;
-    // let obj = await dataURLtoFile(dec, file.name);
-    // console.log(obj);
-    // let objurl = URL.createObjectURL(obj);
-    // window.open(objurl);
   };
 
   const downloadFile = async (file) => {
-    window.open(file.url);
+    var reader = new FileReader();
+    let data = await fetch(file.url);
+    let blob = await data.blob();
+    // console.log(blob);
+    reader.readAsText(blob);
+    reader.onload = async () => {
+      let encdataurl = reader.result;
+      // console.log(encdataurl);
+      let decdataurl = await decryptFile(encdataurl, keys.private);
+      decdataurl = decdataurl.message;
+      let decfile = await dataUrlToFile(decdataurl);
+      let objurl = URL.createObjectURL(decfile);
+      window.open(objurl);
+    };
   };
 
   const handleDelete = async (file) => {
@@ -179,21 +161,6 @@ const Files = ({ email, keys }) => {
                 >
                   {loading ? "Uploading..." : "Upload"}
                 </Button>
-                <div className="pt-2">
-                  <input
-                    type="file"
-                    id="decinp"
-                    className="d-none"
-                    onChange={handleDecrypt}
-                  />
-                  <Button
-                    className="widebtn"
-                    variant="info"
-                    onClick={() => document.getElementById("decinp").click()}
-                  >
-                    Decrypt
-                  </Button>
-                </div>
               </div>
             </div>
           </div>

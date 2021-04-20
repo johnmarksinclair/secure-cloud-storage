@@ -1,5 +1,5 @@
 import { firestore, app } from "../firebase";
-import { genKeys, encryptFile, decryptFile } from "./Crypto";
+import { genKeys, encryptFile } from "./Crypto";
 
 const users = firestore.collection("users");
 const files = firestore.collection("files");
@@ -32,11 +32,12 @@ export const addUserFile = async (file, email, key) => {
     let filename = file.name;
     const storageRef = app.storage().ref();
     const fileRef = storageRef.child(filename);
-
-    let b64 = await fileToBase64(file);
-    let encryptedfile = await base64ToEncryptedFile(b64, filename, key);
-
-    fileRef.put(encryptedfile).then(() => {
+    let dataurlfile = await fileToDataUrl(file);
+    let encdataurl = await encryptFile(dataurlfile, key);
+    let encfilejson = JSON.parse(encdataurl);
+    let str = JSON.stringify(encfilejson);
+    // console.log(str);
+    fileRef.putString(str).then(() => {
       fileRef.getDownloadURL().then(async (url) => {
         let newFile = {
           owner: email,
@@ -47,6 +48,37 @@ export const addUserFile = async (file, email, key) => {
         resolve();
       });
     });
+  });
+};
+
+export const dataUrlToFile = (dataurl, filename) => {
+  return new Promise((resolve) => {
+    var arr = dataurl.split(","),
+      mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]),
+      n = bstr.length,
+      u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    resolve(new File([u8arr], filename, { type: mime }));
+  });
+};
+
+export const fileToDataUrl = (file) => {
+  return new Promise((resolve) => {
+    var reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onloadend = () => {
+      resolve(reader.result);
+    };
+  });
+};
+
+export const extractDataFromFile = (file) => {
+  return new Promise((resolve) => {
+    let extracted = file.split("base64,")[1];
+    resolve(extracted);
   });
 };
 
@@ -80,69 +112,6 @@ export const deleteFile = async (file) => {
           .delete()
           .then(() => resolve());
       });
-  });
-};
-
-export const fileToBase64 = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      resolve(reader.result);
-    };
-    reader.onerror = (error) => {
-      reject(error);
-    };
-  });
-};
-
-export const base64ToEncryptedFile = async (dataurl, filename, key) => {
-  return new Promise(async (resolve) => {
-    var arr = dataurl.split(","),
-      mime = arr[0].match(/:(.*?);/)[1],
-      bstr = atob(arr[1]),
-      n = bstr.length,
-      u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    let encryptedArr = await encryptFile(u8arr, key);
-    u8arr = encryptedArr;
-    resolve(new File([u8arr], filename, { type: mime }));
-  });
-};
-
-export const base64ToDecryptedFile = async (dataurl, filename, key) => {
-  return new Promise(async (resolve) => {
-    var arr = dataurl.split(","),
-      mime = arr[0].match(/:(.*?);/)[1],
-      bstr = atob(arr[1]),
-      n = bstr.length,
-      u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    var string = new TextDecoder().decode(u8arr);
-    // console.log(string);
-    let decrypted = await decryptFile(string, key);
-    decrypted = decrypted.message;
-    // console.log(decryptedArr);
-    u8arr = new TextEncoder().encode(decrypted);
-    resolve(new File([u8arr], filename, { type: mime }));
-  });
-};
-
-export const dataURLtoFile = (dataurl, filename) => {
-  return new Promise((resolve) => {
-    var arr = dataurl.split(","),
-      mime = arr[0].match(/:(.*?);/)[1],
-      bstr = atob(arr[1]),
-      n = bstr.length,
-      u8arr = new Uint8Array(n);
-    while (n--) {
-      u8arr[n] = bstr.charCodeAt(n);
-    }
-    resolve(new File([u8arr], filename, { type: mime }));
   });
 };
 
