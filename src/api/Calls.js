@@ -75,13 +75,6 @@ export const fileToDataUrl = (file) => {
   });
 };
 
-export const extractDataFromFile = (file) => {
-  return new Promise((resolve) => {
-    let extracted = file.split("base64,")[1];
-    resolve(extracted);
-  });
-};
-
 export const getUserFiles = async (email) => {
   let snapshot = await files.where("owner", "==", email).get();
   let fileArr = [];

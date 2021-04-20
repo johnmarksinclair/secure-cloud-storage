@@ -1,15 +1,15 @@
 import { Header, Icon, Segment } from "semantic-ui-react";
 import { useState, useEffect } from "react";
+import { Button } from "react-bootstrap";
+import DeleteModal from "../components/DeleteModal";
+import DupeModal from "../components/DupeModal";
+import { decryptFile } from "../api/Crypto";
 import {
   addUserFile,
   getUserFiles,
   deleteFile,
   dataUrlToFile,
 } from "../api/Calls";
-import DeleteModal from "../components/DeleteModal";
-import DupeModal from "../components/DupeModal";
-import { Button } from "react-bootstrap";
-import { decryptFile } from "../api/Crypto";
 
 const Files = ({ email, keys }) => {
   const [files, setFiles] = useState([]);
@@ -73,16 +73,16 @@ const Files = ({ email, keys }) => {
     var reader = new FileReader();
     let data = await fetch(file.url);
     let blob = await data.blob();
-    // console.log(blob);
     reader.readAsText(blob);
     reader.onload = async () => {
-      let encdataurl = reader.result;
-      // console.log(encdataurl);
-      let decdataurl = await decryptFile(encdataurl, keys.private);
-      decdataurl = decdataurl.message;
-      let decfile = await dataUrlToFile(decdataurl);
-      let objurl = URL.createObjectURL(decfile);
-      window.open(objurl);
+      let decdata = await decryptFile(reader.result, keys.private);
+      let decfile = await dataUrlToFile(decdata.message);
+      let fileurl = URL.createObjectURL(decfile);
+      // window.open(fileurl);
+      let a = document.createElement("a");
+      a.href = fileurl;
+      a.download = file.filename;
+      a.click();
     };
   };
 
