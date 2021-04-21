@@ -145,7 +145,7 @@ const Files = ({ email, keys }) => {
         file={currentFile}
       />
       <div className="h-100 d-flex flex-column">
-        <div className="row pl-3 pr-4 py-2">
+        <div className="row px-3 pt-2">
           <div className="col-6 d-flex align-items-center">
             <Header className="text-dark">My Files</Header>
           </div>
@@ -169,7 +169,7 @@ const Files = ({ email, keys }) => {
             </div>
           </div>
         </div>
-        <div className="grow scroll">
+        <div className="grow scroll mt-4">
           <DisplayFiles />
         </div>
       </div>

@@ -19,7 +19,7 @@ const Group = () => {
   return (
     <div className="vh col py-4">
       <div className="h-100 d-flex flex-column">
-        <div className="row pl-3 pr-4 py-2">
+        <div className="row px-3 pt-2">
           <div className="col-6 d-flex align-items-center">
             <Header>My Groups</Header>
           </div>
@@ -31,7 +31,7 @@ const Group = () => {
             </div>
           </div>
         </div>
-        <div className="grow">
+        <div className="grow scroll mt-4">
           <DisplayGroups />
         </div>
       </div>
