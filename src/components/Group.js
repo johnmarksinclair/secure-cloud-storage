@@ -1,4 +1,4 @@
-import { Header, Segment, Icon } from "semantic-ui-react";
+import { Header, Icon } from "semantic-ui-react";
 import { Button } from "react-bootstrap";
 
 const Group = () => {
@@ -18,25 +18,23 @@ const Group = () => {
 
   return (
     <div className="vh col py-4">
-      <Segment placeholder className="h-100">
-        <div className="h-100 d-flex flex-column">
-          <div className="row px-3 pt-3">
-            <div className="col-6 d-flex align-items-center">
-              <Header>My Groups</Header>
-            </div>
-            <div className="col-6 d-flex justify-content-center">
-              <div className="ml-auto">
-                <Button className="widebtn" variant="info">
-                  Join Group
-                </Button>
-              </div>
-            </div>
+      <div className="h-100 d-flex flex-column">
+        <div className="row pl-3 pr-4 py-2">
+          <div className="col-6 d-flex align-items-center">
+            <Header>My Groups</Header>
           </div>
-          <div className="grow">
-            <DisplayGroups />
+          <div className="col-6 d-flex justify-content-center">
+            <div className="ml-auto">
+              <Button className="widebtn" variant="info">
+                Join Group
+              </Button>
+            </div>
           </div>
         </div>
-      </Segment>
+        <div className="grow">
+          <DisplayGroups />
+        </div>
+      </div>
     </div>
   );
 };

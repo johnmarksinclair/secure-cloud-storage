@@ -1,5 +1,5 @@
-import { Header, Icon, Segment } from "semantic-ui-react";
 import { useState, useEffect } from "react";
+import { Header, Icon } from "semantic-ui-react";
 import { Button } from "react-bootstrap";
 import DeleteModal from "../components/DeleteModal";
 import DupeModal from "../components/DupeModal";
@@ -94,16 +94,22 @@ const Files = ({ email, keys }) => {
   const FileButton = ({ file }) => {
     return (
       <div className="py-1 d-flex align-items-center">
-        <div className="overflow-hidden mr-3 elip">{file.filename}</div>
+        <div className="overflow-hidden mr-3 text-truncate">
+          {file.filename}
+        </div>
         <div className="ml-auto">
           <Button variant="outline-info" onClick={() => downloadFile(file)}>
-            <Icon name="arrow alternate circle down outline" />
+            {/* <div>
+              <Icon name="arrow alternate circle down outline" />
+            </div> */}
             Download
           </Button>
         </div>
         <div className="pl-2">
           <Button variant="danger" onClick={() => handleDeleteShow(file)}>
-            <Icon name="delete" />
+            {/* <div>
+              <Icon name="delete" />
+            </div> */}
             Delete
           </Button>
         </div>
@@ -113,7 +119,7 @@ const Files = ({ email, keys }) => {
 
   const DisplayFiles = () => {
     return (
-      <div className="h-100 pt-3 col">
+      <div className="h-100 col">
         {files.length > 0 ? (
           files.map((f, index) => <FileButton file={f} key={index} />)
         ) : (
@@ -138,37 +144,35 @@ const Files = ({ email, keys }) => {
         handleDelete={handleDelete}
         file={currentFile}
       />
-      <Segment placeholder className="h-100">
-        <div className="h-100 d-flex flex-column">
-          <div className="row px-3 pt-3">
-            <div className="col-6 d-flex align-items-center">
-              <Header className="text-dark">My Files</Header>
-            </div>
-            <div className="col-6 d-flex justify-content-center">
-              <div className="ml-auto">
-                <input
-                  type="file"
-                  id="upload"
-                  className="d-none"
-                  onChange={handleUpload}
-                />
-                <Button
-                  className="widebtn"
-                  variant="info"
-                  onClick={() => {
-                    document.getElementById("upload").click();
-                  }}
-                >
-                  {loading ? "Uploading..." : "Upload"}
-                </Button>
-              </div>
-            </div>
+      <div className="h-100 d-flex flex-column">
+        <div className="row pl-3 pr-4 py-2">
+          <div className="col-6 d-flex align-items-center">
+            <Header className="text-dark">My Files</Header>
           </div>
-          <div className="grow">
-            <DisplayFiles />
+          <div className="col-6 d-flex justify-content-center">
+            <div className="ml-auto">
+              <input
+                type="file"
+                id="upload"
+                className="d-none"
+                onChange={handleUpload}
+              />
+              <Button
+                className="widebtn"
+                variant="info"
+                onClick={() => {
+                  document.getElementById("upload").click();
+                }}
+              >
+                {loading ? "Uploading..." : "Upload"}
+              </Button>
+            </div>
           </div>
         </div>
-      </Segment>
+        <div className="grow scroll">
+          <DisplayFiles />
+        </div>
+      </div>
     </div>
   );
 };
