@@ -1,6 +1,6 @@
 import { Crypt, RSA } from "hybrid-crypto-js";
 
-export const genKeys = () => {
+export const generateKeys = () => {
   return new Promise((resolve) => {
     var rsa = new RSA();
     rsa.generateKeyPair((keyPair) => {
@@ -13,7 +13,7 @@ export const genKeys = () => {
   });
 };
 
-export const encryptFile = async (data, key) => {
+export const encryptData = async (data, key) => {
   return new Promise((resolve) => {
     var crypt = new Crypt();
     let enc = crypt.encrypt(key, data);
@@ -21,7 +21,7 @@ export const encryptFile = async (data, key) => {
   });
 };
 
-export const decryptFile = async (data, key) => {
+export const decryptData = async (data, key) => {
   return new Promise((resolve) => {
     var crypt = new Crypt();
     let dec = crypt.decrypt(key, data);

@@ -4,7 +4,7 @@ import { useContext, useState, useEffect } from "react";
 import { UserContext } from "../providers/UserProvider";
 import { Row, Col, Button } from "react-bootstrap";
 import { Image, Icon } from "semantic-ui-react";
-import { addUser } from "../api/Calls";
+import { getUser } from "../api/Calls";
 import LogoutModal from "../components/LogoutModal";
 
 const Dash = () => {
@@ -31,7 +31,7 @@ const Dash = () => {
       setPic(photoURL);
       setName(displayName);
       setAdd(email);
-      let pair = await addUser(email);
+      let pair = await getUser(email);
       setKeys(pair);
     }
   };

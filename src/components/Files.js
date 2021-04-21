@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
 import { Header, Icon } from "semantic-ui-react";
-import { Button } from "react-bootstrap";
+import { Button, Alert } from "react-bootstrap";
 import DeleteModal from "../components/DeleteModal";
-import DupeModal from "../components/DupeModal";
-import { decryptFile } from "../api/Crypto";
 import {
   addUserFile,
   getUserFiles,
   deleteFile,
-  dataUrlToFile,
+  downloadFile,
 } from "../api/Calls";
 
 const Files = ({ email, keys }) => {
+  const maxfilesize = 50;
   const [files, setFiles] = useState([]);
   const [flag, setFlag] = useState(false);
-  const [dupeModalShow, setDupeShow] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [tooLarge, setTooLarge] = useState(false);
   const [deleteModalShow, setDeleteShow] = useState(false);
   const [currentFile, setCurrentFile] = useState(null);
   const handleDeleteShow = (file) => {
@@ -42,48 +42,33 @@ const Files = ({ email, keys }) => {
   const isDuplicate = (passed) => {
     let flag = false;
     files.forEach((f) => {
-      if (f.filename === passed) flag = true;
+      if (f.filename === email + "&^%" + passed) flag = f;
     });
     return flag;
   };
 
   const handleUpload = (e) => {
-    setLoading(true);
-    let file = e.target.files;
-    if (file.length > 0) {
-      file = e.target.files[0];
-      if (isDuplicate(file.name)) {
-        setDupeShow(true);
-        setLoading(false);
-      } else if (file.size / 1000 < 50 * 1024 * 1024) {
-        addUserFile(file, email, keys.public).then(() => {
+    setUploading(true);
+    if (e.target.files.length > 0) {
+      let file = e.target.files[0];
+      if (file.size < maxfilesize * 1024 * 1024) {
+        let dupe = isDuplicate(file.name);
+        addUserFile(file, email, keys.public, dupe).then(() => {
           setFlag(!flag);
-          setLoading(false);
+          setUploading(false);
         });
       } else {
-        console.log("file too large");
-        setLoading(false);
+        setUploading(false);
+        setTooLarge(true);
+        setTimeout(() => setTooLarge(false), 3000);
       }
     }
     e.target.value = null;
-    setLoading(false);
   };
 
-  const downloadFile = async (file) => {
-    var reader = new FileReader();
-    let data = await fetch(file.url);
-    let blob = await data.blob();
-    reader.readAsText(blob);
-    reader.onload = async () => {
-      let decdata = await decryptFile(reader.result, keys.private);
-      let decfile = await dataUrlToFile(decdata.message);
-      let fileurl = URL.createObjectURL(decfile);
-      // window.open(fileurl);
-      let a = document.createElement("a");
-      a.href = fileurl;
-      a.download = file.filename;
-      a.click();
-    };
+  const handleDownload = async (file) => {
+    setDownloading(true);
+    downloadFile(file, keys.private).then(() => setDownloading(false));
   };
 
   const handleDelete = async (file) => {
@@ -92,24 +77,17 @@ const Files = ({ email, keys }) => {
   };
 
   const FileButton = ({ file }) => {
+    let displayname = file.filename.split("&^%")[1];
     return (
       <div className="py-1 d-flex align-items-center">
-        <div className="overflow-hidden mr-3 text-truncate">
-          {file.filename}
-        </div>
+        <div className="overflow-hidden mr-3 text-truncate">{displayname}</div>
         <div className="ml-auto">
-          <Button variant="outline-info" onClick={() => downloadFile(file)}>
-            {/* <div>
-              <Icon name="arrow alternate circle down outline" />
-            </div> */}
+          <Button variant="outline-info" onClick={() => handleDownload(file)}>
             Download
           </Button>
         </div>
         <div className="pl-2">
           <Button variant="danger" onClick={() => handleDeleteShow(file)}>
-            {/* <div>
-              <Icon name="delete" />
-            </div> */}
             Delete
           </Button>
         </div>
@@ -137,13 +115,22 @@ const Files = ({ email, keys }) => {
 
   return (
     <div className="vh col py-4">
-      <DupeModal dupeModalShow={dupeModalShow} setDupeShow={setDupeShow} />
       <DeleteModal
         deleteModalShow={deleteModalShow}
         setDeleteShow={setDeleteShow}
         handleDelete={handleDelete}
         file={currentFile}
       />
+      <Alert show={downloading} variant="info">
+        Decrypting File & Downloading...
+      </Alert>
+      <Alert show={uploading} variant="info">
+        Encrypting File & Uploading...
+      </Alert>
+      <Alert show={tooLarge} variant="danger">
+        File too large! We currently only support files less than {maxfilesize}{" "}
+        MB
+      </Alert>
       <div className="h-100 d-flex flex-column">
         <div className="row px-3 pt-2">
           <div className="col-6 d-flex align-items-center">
@@ -160,11 +147,9 @@ const Files = ({ email, keys }) => {
               <Button
                 className="widebtn"
                 variant="info"
-                onClick={() => {
-                  document.getElementById("upload").click();
-                }}
+                onClick={() => document.getElementById("upload").click()}
               >
-                {loading ? "Uploading..." : "Upload"}
+                Upload
               </Button>
             </div>
           </div>
@@ -178,3 +163,10 @@ const Files = ({ email, keys }) => {
 };
 
 export default Files;
+
+/* <div>
+  <Icon name="arrow alternate circle down outline" />
+</div>;
+<div>
+  <Icon name="delete" />
+</div>; */

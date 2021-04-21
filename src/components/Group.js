@@ -6,14 +6,20 @@ const Group = () => {
     return (
       <div className="h-100 pt-3">
         <div className="h-100 col d-flex flex-column justify-content-center align-items-center">
-          <Header icon>
-            <Icon name="group" />
-            No Groups
-          </Header>
-          Join one with the button above
+          <div className="col-xs-6 col-md-3 text-center">
+            <Header icon>
+              <Icon name="group" />
+              No Groups
+            </Header>
+            <p>Make one with the button or be added to a group by a friend</p>
+          </div>
         </div>
       </div>
     );
+  };
+
+  const handleNewGroup = () => {
+    console.log("new");
   };
 
   return (
@@ -25,8 +31,12 @@ const Group = () => {
           </div>
           <div className="col-6 d-flex justify-content-center">
             <div className="ml-auto">
-              <Button className="widebtn" variant="info">
-                Join Group
+              <Button
+                className="widebtn"
+                variant="info"
+                onClick={handleNewGroup}
+              >
+                New Group
               </Button>
             </div>
           </div>
