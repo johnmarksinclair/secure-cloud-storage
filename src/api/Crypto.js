@@ -4,11 +4,10 @@ export const generateKeys = () => {
   return new Promise((resolve) => {
     var rsa = new RSA();
     rsa.generateKeyPair((keyPair) => {
-      let pair = {
+      resolve({
         public: keyPair.publicKey,
         private: keyPair.privateKey,
-      };
-      resolve(pair);
+      });
     });
   });
 };
@@ -16,15 +15,13 @@ export const generateKeys = () => {
 export const encryptData = async (data, key) => {
   return new Promise((resolve) => {
     var crypt = new Crypt();
-    let enc = crypt.encrypt(key, data);
-    resolve(enc);
+    resolve(crypt.encrypt(key, data));
   });
 };
 
 export const decryptData = async (data, key) => {
   return new Promise((resolve) => {
     var crypt = new Crypt();
-    let dec = crypt.decrypt(key, data);
-    resolve(dec);
+    resolve(crypt.decrypt(key, data));
   });
 };

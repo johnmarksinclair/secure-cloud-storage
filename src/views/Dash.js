@@ -15,9 +15,7 @@ const Dash = () => {
   const [add, setAdd] = useState("");
   const [logoutModalShow, setLogoutShow] = useState(false);
   const [view, setView] = useState("files");
-  const toggleView = (e) => {
-    setView(e.target.id);
-  };
+  const toggleView = (e) => setView(e.target.id);
 
   useEffect(() => {
     updateData();
@@ -25,7 +23,6 @@ const Dash = () => {
   }, [user]);
 
   const updateData = async () => {
-    // console.log("Dash.js: updateData");
     if (user) {
       let { photoURL, displayName, email } = user;
       setPic(photoURL);

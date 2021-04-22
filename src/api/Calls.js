@@ -16,11 +16,10 @@ export const getUser = async (email) => {
       } else {
         console.log("new user, generating keys for " + email);
         let pair = await generateKeys();
-        let user = {
+        users.doc(email).set({
           keys: pair,
           groups: [],
-        };
-        users.doc(email).set(user);
+        });
         resolve(pair);
       }
     });
@@ -35,16 +34,13 @@ export const addUserFile = async (file, email, key, dupe) => {
     const fileRef = storageRef.child(filename);
     let dataurlfile = await fileToDataUrl(file);
     let encdataurl = await encryptData(dataurlfile, key);
-    let encfilejson = JSON.parse(encdataurl);
-    let str = JSON.stringify(encfilejson);
-    fileRef.putString(str).then(() => {
+    fileRef.putString(encdataurl).then(() => {
       fileRef.getDownloadURL().then(async (url) => {
-        let newFile = {
+        files.add({
           owner: email,
           name: filename,
           url: url,
-        };
-        files.add(newFile);
+        });
         resolve();
       });
     });
@@ -53,8 +49,8 @@ export const addUserFile = async (file, email, key, dupe) => {
 
 export const getUserFiles = async (email) => {
   let snapshot = await files.where("owner", "==", email).get();
-  let fileArr = [];
   if (snapshot.empty) return;
+  let fileArr = [];
   snapshot.forEach((doc) => fileArr.push(createFileObj(doc)));
   return fileArr;
 };
@@ -122,11 +118,10 @@ export const fileToDataUrl = (file) => {
 };
 
 export const createFileObj = (doc) => {
-  let fileObj = {
+  return {
     id: `${doc.id}`,
     owner: `${doc.data().owner}`,
     url: `${doc.data().url}`,
     filename: `${doc.data().name}`,
   };
-  return fileObj;
 };
