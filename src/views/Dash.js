@@ -1,10 +1,13 @@
-import Files from "../components/Files";
-import Group from "../components/Group";
 import { useContext, useState, useEffect } from "react";
 import { UserContext } from "../providers/UserProvider";
 import { Row, Col, Button } from "react-bootstrap";
 import { Image, Icon } from "semantic-ui-react";
-import { getUser } from "../api/Calls";
+import { isUser, getUser } from "../api/Calls";
+import { decryptPrivateKey } from "../api/Crypto";
+import Files from "../components/Files";
+import Group from "../components/Group";
+import NewPasswordModal from "../components/NewPassword";
+import PasswordModal from "../components/PasswordModal";
 import LogoutModal from "../components/LogoutModal";
 
 const Dash = () => {
@@ -13,24 +16,68 @@ const Dash = () => {
   const [pic, setPic] = useState("");
   const [name, setName] = useState("");
   const [add, setAdd] = useState("");
+  const [flag, setFlag] = useState(false);
+  const [password, setPassword] = useState("");
+  const [incorrect, setIncorrect] = useState(false);
   const [logoutModalShow, setLogoutShow] = useState(false);
-  const [view, setView] = useState("files");
+  const [passwordModalShow, setPasswordShow] = useState(false);
+  const [newPasswordShow, setNewPasswordShow] = useState(false);
+  const [view, setView] = useState("1");
   const toggleView = (e) => setView(e.target.id);
 
   useEffect(() => {
     updateData();
     // eslint-disable-next-line
-  }, [user]);
+  }, [user, password, flag]);
 
   const updateData = async () => {
-    if (user) {
-      let { photoURL, displayName, email } = user;
-      setPic(photoURL);
-      setName(displayName);
-      setAdd(email);
-      let pair = await getUser(email);
-      setKeys(pair);
+    let { photoURL, displayName, email } = user;
+    setPic(photoURL);
+    setName(displayName);
+    setAdd(email);
+    let userinfo = await isUser(email);
+    if (userinfo) {
+      if (password === null) return;
+      getPassword().then(async () => {
+        let userinfo = await getUser(email, password);
+        let decpair = await decryptPrivate(userinfo.keys);
+        setKeys(decpair);
+      });
+    } else {
+      if (!flag) setNewPasswordShow(true);
+      else {
+        console.log(password);
+        userinfo = await getUser(email, password);
+        let decpair = await decryptPrivate(userinfo.keys);
+        setKeys(decpair);
+      }
     }
+  };
+
+  const getPassword = () => {
+    return new Promise((resolve) => {
+      if (password === "") setPasswordShow(true);
+      else if (password === null) resolve();
+      else resolve();
+    });
+  };
+
+  const decryptPrivate = (encpair) => {
+    return new Promise(async (resolve) => {
+      // console.log(password);
+      // console.log(encpair);
+      let decpair = encpair;
+      decpair = await decryptPrivateKey(encpair, password);
+      if (!decpair) {
+        setPassword("");
+        setIncorrect(true);
+        getPassword();
+        return;
+      }
+      // console.log(decpair);
+      setPassword(null);
+      resolve(decpair);
+    });
   };
 
   return (
@@ -38,6 +85,18 @@ const Dash = () => {
       <LogoutModal
         logoutModalShow={logoutModalShow}
         setLogoutShow={setLogoutShow}
+      />
+      <PasswordModal
+        passwordModalShow={passwordModalShow}
+        setPasswordShow={setPasswordShow}
+        setPassword={setPassword}
+        incorrect={incorrect}
+      />
+      <NewPasswordModal
+        newPasswordShow={newPasswordShow}
+        setNewPasswordShow={setNewPasswordShow}
+        setPassword={setPassword}
+        setFlag={setFlag}
       />
       <Row className="h-100">
         <Col md={2} className="bg-info text-light d-flex flex-column">
@@ -58,7 +117,7 @@ const Dash = () => {
               <div className="pb-2 w-100">
                 <Button
                   variant="light"
-                  id="files"
+                  id="1"
                   onClick={toggleView}
                   className="w-100 text-info"
                 >
@@ -68,7 +127,7 @@ const Dash = () => {
               <div className="pb-2 w-100">
                 <Button
                   variant="light"
-                  id="groups"
+                  id="2"
                   onClick={toggleView}
                   className="w-100 text-info"
                 >
@@ -88,7 +147,7 @@ const Dash = () => {
           </div>
         </Col>
         <Col md={10} className="bg-light text-dark">
-          {view === "files" ? <Files email={add} keys={keys} /> : <Group />}
+          {view === "1" ? <Files email={add} keys={keys} /> : <Group />}
         </Col>
       </Row>
     </Col>

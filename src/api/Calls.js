@@ -1,5 +1,10 @@
 import { firestore, app } from "../firebase";
-import { generateKeys, encryptData, decryptData } from "./Crypto";
+import {
+  generateKeys,
+  encryptData,
+  decryptData,
+  encryptPrivateKey,
+} from "./Crypto";
 
 const users = firestore.collection("users");
 const files = firestore.collection("files");
@@ -7,20 +12,36 @@ const files = firestore.collection("files");
 const storage = app.storage();
 const storageRef = storage.ref();
 
-export const getUser = async (email) => {
+export const isUser = async (email) => {
+  return new Promise((resolve) => {
+    let ref = users.doc(email);
+    ref.get().then(async (doc) => {
+      if (doc.exists) resolve(true);
+      else resolve(false);
+    });
+  });
+};
+
+export const getUser = (email, password) => {
   return new Promise((resolve) => {
     let ref = users.doc(email);
     ref.get().then(async (doc) => {
       if (doc.exists) {
-        resolve(doc.data().keys);
+        let userinfo = {
+          keys: doc.data().keys,
+          groups: doc.data().groups,
+        };
+        resolve(userinfo);
       } else {
         console.log("new user, generating keys for " + email);
         let pair = await generateKeys();
-        users.doc(email).set({
-          keys: pair,
+        let encpair = await encryptPrivateKey(pair, password);
+        let userinfo = {
+          keys: encpair,
           groups: [],
-        });
-        resolve(pair);
+        };
+        users.doc(email).set(userinfo);
+        resolve(userinfo);
       }
     });
   });
