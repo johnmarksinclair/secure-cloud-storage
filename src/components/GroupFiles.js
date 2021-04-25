@@ -39,7 +39,6 @@ const GroupFiles = ({ group, setSelected }) => {
     // }
     setFiles(fileArr);
     setKeys(keys);
-    handleUpload();
   };
 
   const isDuplicate = (passed) => {
@@ -76,6 +75,7 @@ const GroupFiles = ({ group, setSelected }) => {
   };
 
   const handleDelete = async (file) => {
+    handleUpload();
     setDeleteShow(false);
     deleteFile(file).then(() => setFlag(!flag));
   };
