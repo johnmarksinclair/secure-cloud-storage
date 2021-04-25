@@ -12,7 +12,7 @@ const groups = firestore.collection("groups");
 const storage = app.storage();
 const storageRef = storage.ref();
 
-const verbose = true;
+const verbose = false;
 
 export const isUser = async (email) => {
   return new Promise((resolve) => {
