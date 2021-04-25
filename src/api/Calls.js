@@ -12,6 +12,8 @@ const groups = firestore.collection("groups");
 const storage = app.storage();
 const storageRef = storage.ref();
 
+const verbose = true;
+
 export const isUser = async (email) => {
   return new Promise((resolve) => {
     let ref = users.doc(email);
@@ -35,6 +37,7 @@ export const getUser = (email, password) => {
       } else {
         console.log("new user, generating keys for " + email);
         let pair = await generateKeys();
+        if (verbose) console.log(pair);
         let encpair = await encryptPrivateKey(pair, password);
         let userinfo = {
           keys: encpair,

@@ -47,7 +47,6 @@ const Dash = () => {
     } else {
       if (!flag) setNewPasswordShow(true);
       else {
-        console.log(password);
         userinfo = await getUser(email, password);
         let decpair = await decryptPrivate(userinfo.keys);
         setKeys(decpair);
