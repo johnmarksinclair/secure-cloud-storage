@@ -145,7 +145,7 @@ const GroupFiles = ({ group, setSelected }) => {
               <Header>Group Files - {group.name}</Header>
             </div>
           </div>
-          {/* <div className="col-6 d-flex justify-content-center">
+          <div className="col-6 d-flex justify-content-center">
             <div className="ml-auto">
               <input
                 type="file"
@@ -161,7 +161,7 @@ const GroupFiles = ({ group, setSelected }) => {
                 Upload
               </Button>
             </div>
-          </div> */}
+          </div>
         </div>
         <div className="grow scroll mt-4">
           <DisplayFiles />

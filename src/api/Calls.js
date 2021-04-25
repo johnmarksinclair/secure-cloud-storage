@@ -84,8 +84,8 @@ export const getUserFiles = async (email) => {
 
 export const createGroup = async (email, name, password) => {
   return new Promise(async (resolve) => {
-    // console.log(password);
     let pair = await generateKeys();
+    if (verbose) console.log(pair);
     let encpair = await encryptPrivateKey(pair, password);
     let group = { owner: email, name: name, keys: encpair };
     groups.add(group);
