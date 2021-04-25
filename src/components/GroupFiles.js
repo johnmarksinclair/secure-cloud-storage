@@ -3,14 +3,15 @@ import { Header, Icon } from "semantic-ui-react";
 import { Button, Alert } from "react-bootstrap";
 import DeleteModal from "../components/DeleteModal";
 import {
-  addUserFile,
-  getUserFiles,
+  // addUserFile,
+  // getUserFiles,
   deleteFile,
-  downloadFile,
+  // downloadFile,
 } from "../api/Calls";
 
-const Files = ({ email, keys }) => {
+const GroupFiles = ({ group, setSelected }) => {
   const maxfilesize = 50;
+  const [keys, setKeys] = useState({});
   const [files, setFiles] = useState([]);
   const [flag, setFlag] = useState(false);
   const [downloading, setDownloading] = useState(false);
@@ -26,23 +27,25 @@ const Files = ({ email, keys }) => {
   useEffect(() => {
     updateData();
     // eslint-disable-next-line
-  }, [flag, keys]);
+  }, [flag]);
 
   const updateData = async () => {
-    let userfiles = await getUserFiles(email);
+    // let userfiles = await getUserFiles(email);
     let fileArr = [];
-    if (userfiles) {
-      userfiles.forEach((f) => {
-        fileArr.push(f);
-      });
-    }
+    // if (userfiles) {
+    //   userfiles.forEach((f) => {
+    //     fileArr.push(f);
+    //   });
+    // }
     setFiles(fileArr);
+    setKeys(keys);
+    handleUpload();
   };
 
   const isDuplicate = (passed) => {
     let flag = false;
     files.forEach((f) => {
-      if (f.filename === email + "&^%" + passed) flag = f;
+      //   if (f.filename === email + "&^%" + passed) flag = f;
     });
     return flag;
   };
@@ -53,10 +56,11 @@ const Files = ({ email, keys }) => {
       let file = e.target.files[0];
       if (file.size < maxfilesize * 1024 * 1024) {
         let dupe = isDuplicate(file.name);
-        addUserFile(file, email, keys.public, dupe).then(() => {
-          setFlag(!flag);
-          setUploading(false);
-        });
+        console.log(dupe);
+        // addUserFile(file, email, keys.public, dupe).then(() => {
+        //   setFlag(!flag);
+        //   setUploading(false);
+        // });
       } else {
         setUploading(false);
         setTooLarge(true);
@@ -68,7 +72,7 @@ const Files = ({ email, keys }) => {
 
   const handleDownload = async (file) => {
     setDownloading(true);
-    downloadFile(file, keys.private).then(() => setDownloading(false));
+    // downloadFile(file, keys.private).then(() => setDownloading(false));
   };
 
   const handleDelete = async (file) => {
@@ -133,10 +137,15 @@ const Files = ({ email, keys }) => {
       </Alert>
       <div className="h-100 d-flex flex-column">
         <div className="row px-3 pt-2">
-          <div className="col-6 d-flex align-items-center">
-            <Header className="text-dark">My Files</Header>
+          <div className="col d-flex ">
+            <Button variant="outline-info" onClick={() => setSelected("")}>
+              <Icon className="arrow left" />
+            </Button>
+            <div className="ml-4 d-flex align-items-center">
+              <Header>Group Files - {group.name}</Header>
+            </div>
           </div>
-          <div className="col-6 d-flex justify-content-center">
+          {/* <div className="col-6 d-flex justify-content-center">
             <div className="ml-auto">
               <input
                 type="file"
@@ -152,7 +161,7 @@ const Files = ({ email, keys }) => {
                 Upload
               </Button>
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="grow scroll mt-4">
           <DisplayFiles />
@@ -162,4 +171,4 @@ const Files = ({ email, keys }) => {
   );
 };
 
-export default Files;
+export default GroupFiles;

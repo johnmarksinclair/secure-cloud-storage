@@ -48,12 +48,3 @@ export const decryptPrivateKey = async (pair, password) => {
     }
   });
 };
-
-// const testaes = (encpair, password) => {
-//   let privatekey = encpair.private;
-//   console.log(privatekey);
-//   let cipher = aes.encrypt(privatekey, password).toString();
-//   console.log(">>>cipher\n" + cipher);
-//   let decrypted = aes.decrypt(cipher, password).toString(CryptoJS.enc.Utf8);
-//   console.log(decrypted);
-// };

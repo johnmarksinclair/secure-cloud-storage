@@ -8,7 +8,9 @@ const NewPasswordModal = ({
   setPassword,
   setFlag,
 }) => {
-  const [alert, setAlert] = useState(false);
+  const message =
+    "Don't forget this as we do not store it! If you forget this password your files will remain encrypted";
+  const [text, setText] = useState(message);
   const [input, setInput] = useState("");
   const [secondInput, setSecondInput] = useState("");
   const handleInput = (e) => {
@@ -23,8 +25,8 @@ const NewPasswordModal = ({
     } else {
       setInput("");
       setSecondInput("");
-      setAlert(true);
-      setTimeout(() => setAlert(false), 3000);
+      setText("Passwords did not match!");
+      setTimeout(() => setText(message), 3000);
     }
   };
 
@@ -36,6 +38,9 @@ const NewPasswordModal = ({
             Enter a password that will be used to encrypt your private key
           </Modal.Title>
           <div className="pt-3">
+            <Alert show="true" variant="danger">
+              {text}
+            </Alert>
             <Input
               type="password"
               id="first"
@@ -55,14 +60,11 @@ const NewPasswordModal = ({
               onChange={handleInput}
             />
           </div>
-          <div className="pt-3 pb-2">
+          <div className="py-3">
             <Button variant="info" onClick={handleSubmit}>
               Submit
             </Button>
           </div>
-          <Alert show={alert} variant="danger">
-            Passwords did not match!
-          </Alert>
         </div>
       </Modal.Header>
     </Modal>

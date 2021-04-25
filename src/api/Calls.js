@@ -8,7 +8,7 @@ import {
 
 const users = firestore.collection("users");
 const files = firestore.collection("files");
-// const groups = firestore.collection("groups");
+const groups = firestore.collection("groups");
 const storage = app.storage();
 const storageRef = storage.ref();
 
@@ -61,6 +61,7 @@ export const addUserFile = async (file, email, key, dupe) => {
           owner: email,
           name: filename,
           url: url,
+          group: false,
         });
         resolve();
       });
@@ -72,8 +73,34 @@ export const getUserFiles = async (email) => {
   let snapshot = await files.where("owner", "==", email).get();
   if (snapshot.empty) return;
   let fileArr = [];
-  snapshot.forEach((doc) => fileArr.push(createFileObj(doc)));
+  snapshot.forEach((doc) => {
+    if (!doc.group) fileArr.push(createFileObj(doc));
+  });
   return fileArr;
+};
+
+export const createGroup = async (email, name, password) => {
+  return new Promise(async (resolve) => {
+    // console.log(password);
+    let pair = await generateKeys();
+    let encpair = await encryptPrivateKey(pair, password);
+    let group = { owner: email, name: name, keys: encpair };
+    groups.add(group);
+    resolve();
+  });
+};
+
+export const addUserToGroup = async (email, groupID) => {};
+
+// todo edit to also get groups email is member of
+export const getUsersGroups = (email) => {
+  return new Promise(async (resolve) => {
+    let snapshot = await groups.where("owner", "==", email).get();
+    if (snapshot.empty) return;
+    let grouparr = [];
+    snapshot.forEach((doc) => grouparr.push(createGroupObj(doc)));
+    resolve(grouparr);
+  });
 };
 
 export const deleteFile = async (file) => {
@@ -144,5 +171,14 @@ export const createFileObj = (doc) => {
     owner: `${doc.data().owner}`,
     url: `${doc.data().url}`,
     filename: `${doc.data().name}`,
+  };
+};
+
+export const createGroupObj = (doc) => {
+  return {
+    id: `${doc.id}`,
+    owner: `${doc.data().owner}`,
+    name: `${doc.data().name}`,
+    keys: `${doc.data().keys}`,
   };
 };

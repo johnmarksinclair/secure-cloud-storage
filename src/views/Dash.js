@@ -28,7 +28,7 @@ const Dash = () => {
   useEffect(() => {
     updateData();
     // eslint-disable-next-line
-  }, [user, password, flag]);
+  }, [user, password, flag, view]);
 
   const updateData = async () => {
     let { photoURL, displayName, email } = user;
@@ -37,12 +37,13 @@ const Dash = () => {
     setAdd(email);
     let userinfo = await isUser(email);
     if (userinfo) {
-      if (password === null) return;
-      getPassword().then(async () => {
-        let userinfo = await getUser(email, password);
-        let decpair = await decryptPrivate(userinfo.keys);
-        setKeys(decpair);
-      });
+      if (password !== null) {
+        getPassword().then(async () => {
+          let userinfo = await getUser(email, password);
+          let decpair = await decryptPrivate(userinfo.keys);
+          setKeys(decpair);
+        });
+      }
     } else {
       if (!flag) setNewPasswordShow(true);
       else {
@@ -64,8 +65,6 @@ const Dash = () => {
 
   const decryptPrivate = (encpair) => {
     return new Promise(async (resolve) => {
-      // console.log(password);
-      // console.log(encpair);
       let decpair = encpair;
       decpair = await decryptPrivateKey(encpair, password);
       if (!decpair) {
@@ -74,7 +73,6 @@ const Dash = () => {
         getPassword();
         return;
       }
-      // console.log(decpair);
       setPassword(null);
       resolve(decpair);
     });
@@ -147,7 +145,11 @@ const Dash = () => {
           </div>
         </Col>
         <Col md={10} className="bg-light text-dark">
-          {view === "1" ? <Files email={add} keys={keys} /> : <Group />}
+          {view === "1" ? (
+            <Files email={add} keys={keys} />
+          ) : (
+            <Group email={add} keys={keys} />
+          )}
         </Col>
       </Row>
     </Col>
