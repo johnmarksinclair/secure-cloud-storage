@@ -19,29 +19,16 @@ I developed my application using the JavaScript frontend framework ReactJS. The 
 
 I implemented my login using Google authentication, I chose this for its simplicity and universal appeal. When a user logs in, the application checks the database to see whether the user is registered with the service, if not the following prompt is shown. It is requesting a password from the user that will be used to encrypt the user&#39;s private key so as not to store a plain text version of it on the server. When the user has decided on a password the application generates a new RSA key pair and encrypts the RSA private key using AES encryption with the password as the secret key. Note, the password is not stored anywhere, if the user forgets it they will be unable to decrypt their private key and therefore, any files they had stored on the cloud service. While this may seem an inconvenience to users, it ensures the utmost security as not even the server admin has the ability to decrypt and user files.
 
-![](RackMultipart20210425-4-17f693q_html_4cac2aa17af9bad.png)
-
 Similarly, if a user is already registered with the service, they will be prompted to enter their password in order to decrypt their encrypted RSA private key stored on the server.
-
-![](RackMultipart20210425-4-17f693q_html_7f9ca03ac95ef73d.png)
 
 This is a very effective mechanism as the user cannot access the application without first inputting the correct password, the private key decryption fails if the password is incorrect and the prompt is triggered again. The picture below is from the Firebase document database, as you can see the private key is entirely encrypted and completely useless without the password.
 
-![](RackMultipart20210425-4-17f693q_html_cf44c5fb42287adc.png)
-
 Once the user has logged in and inputted their password they have full access to the application. The service is split into two sections, personal files and the group files. Users can then upload files to their own or to a group by pressing the upload button in the top right corner. This opens a window for them to select the file for upload.
 
-![](RackMultipart20210425-4-17f693q_html_f4704561b7747a5b.png)
+Once a file is selected, the file is read into the application by the handleUpload function. The method has a number of checks, such as ensuring a valid file has been selected, checking if the size is less than the limit (currently 50mb) and checking whether the file already exists in the cloud storage database. If the file is already stored the upload process is slightly different, updating the file in the cloud instead of adding a new copy, eliminating duplicates. 
+The addUserFile then uploads the file. The file is first converted to a data url, this is to allow for easy encryption, the resulting data url is encrypted and added to the cloud storage. Then, an accompanying document is added to the firestore database with owner information and a file download link. 
 
-| Once a file is selected, the file is read into the application by the handleUpload function. The method has a number of checks, such as ensuring a valid file has been selected, checking if the size is less than the limit (currently 50mb) and checking whether the file already exists in the cloud storage database. If the file is already stored the upload process is slightly different, updating the file in the cloud instead of adding a new copy, eliminating duplicates. | ![](RackMultipart20210425-4-17f693q_html_dce46169b90300b3.png) |
-| --- | --- |
-| The addUserFile then uploads the file. The file is first converted to a data url, this is to allow for easy encryption, the resulting data url is encrypted and added to the cloud storage. Then, an accompanying document is added to the firestore database with owner information and a file download link. | ![](RackMultipart20210425-4-17f693q_html_398f6046b68c3888.png)
- |
-
-![](RackMultipart20210425-4-17f693q_html_be3f2038f7fcf962.png)
-
-| Uploaded files can be seen in the &#39;Files&#39; tab, where users can download as well as delete any files currently stored. The downloadFile function handles the download process. It takes two arguments, the file (which is the file information document containing the download url), and the user&#39;s private key. First the file (in the form of an encrypted data url) is fetched using the download url, the resulting data url is then decrypted using the decryptData function, converted back into a JS File object then the browser download process starts. To the user this is a seamless process, they simply have to press the download button. | ![](RackMultipart20210425-4-17f693q_html_4eefc211e3521197.png) |
-| --- | --- |
+Uploaded files can be seen in the &#39;Files&#39; tab, where users can download as well as delete any files currently stored. The downloadFile function handles the download process. It takes two arguments, the file (which is the file information document containing the download url), and the user&#39;s private key. First the file (in the form of an encrypted data url) is fetched using the download url, the resulting data url is then decrypted using the decryptData function, converted back into a JS File object then the browser download process starts. To the user this is a seamless process, they simply have to press the download button.
 
 Group functionality is implemented much the same as regular users are in the application. Any user can create a group, giving it a name and a password. The system then generates a set of RSA keys, again encrypting the private key with the password using AES encryption, the encrypted key pair is then added to the group object along with the name and admin email. The group object is then added to the database.
 
@@ -53,25 +40,13 @@ I used a combination of two node libraries to implement the applications key man
 
 The user information that is stored remotely is in the form of a document as it is stored in a NoSQL Firestore database. For each document the users email, provided by google authentication is used as the documents id, the documents contained two fields, the first was an array of group ids that the user was a member of and the other the user&#39;s encrypted RSA key pair. These documents act as public key certificates in my system, directly associating the users email with ownership of the key pair. The Google login effectively adds another layer of security for prospective users.
 
-![](RackMultipart20210425-4-17f693q_html_7dffc14af1cfe674.png)
-
-![](RackMultipart20210425-4-17f693q_html_a9f8e3c2b90df461.png)
-
 First the relevant components of each library were imported and assigned to a constant. The first function is the generateKeys function, it very simply creates then returns an RSA key pair.
-
-![](RackMultipart20210425-4-17f693q_html_c216837d3340da06.png)
 
 Next, the application required functions to encrypt and decrypt the RSA private key using a user password.
 
-![](RackMultipart20210425-4-17f693q_html_82d793d2b6573821.png)
-
 The decrypt function is slightly longer as it contains error handling in the case the user incorrectly inputs their password. This way a user can repeatedly input an incorrect password without the application crashing.
 
-![](RackMultipart20210425-4-17f693q_html_3075a7ac7db44928.png)
-
 The last two functions required were to encrypt and decrypt the files that were passed as parameters in the form of a data url. The data is encrypted using the user&#39;s public key.
-
-![](RackMultipart20210425-4-17f693q_html_5b03d6811e63f41.png)
 
 In the decryptData function, the data is in the form of an encrypted data url. This encrypted data is then decrypted using the passed in private key and returned.
 
