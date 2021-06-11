@@ -17,6 +17,9 @@ const PasswordModal = ({
       setPassword(input);
     }
   };
+  const handleKey = (e) => {
+    if (e.key === "Enter") handleSubmit();
+  };
 
   return (
     <Modal show={passwordModalShow} size="sm" centered>
@@ -35,10 +38,11 @@ const PasswordModal = ({
               placeholder="Password"
               value={input}
               onChange={handleInput}
+              onKeyUp={handleKey}
             />
           </div>
           <div className="pt-3 pb-2">
-            <Button variant="info" onClick={handleSubmit}>
+            <Button variant="info" type="submit" onClick={handleSubmit}>
               Submit
             </Button>
           </div>
