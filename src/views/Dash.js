@@ -121,7 +121,7 @@ const Dash = () => {
                   Files
                 </Button>
               </div>
-              <div className="pb-2 w-100">
+              {/* <div className="pb-2 w-100">
                 <Button
                   variant="light"
                   id="2"
@@ -130,7 +130,7 @@ const Dash = () => {
                 >
                   Groups
                 </Button>
-              </div>
+              </div> */}
               <div className="pb-2 w-100">
                 <Button
                   variant="light"
